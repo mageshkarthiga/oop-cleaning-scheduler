@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@toast-ui/calendar": "^2.1.3",
+    "@toast-ui/react-calendar": "^2.1.3",
     "axios": "^1.7.7",
     "next": "14.2.8",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.8.2",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "tui-date-picker": "^4.3.3",
+    "tui-time-picker": "^2.1.6"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
