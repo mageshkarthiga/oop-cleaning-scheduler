@@ -1,51 +1,49 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
-import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { Button } from "primereact/button";
 
 export default function Login() {
-    const [checked, setChecked] = useState(false);
     const [invalid, setInvalid] = useState(false);
     const [empty, setEmpty] = useState(false);
-    const [email, setEmail] = useState("");
+    const [loginError, setLoginError] = useState(false);
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const validateEmail = (email) => {
-        if (email.length > 0) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-        return false;
-    };
 
-    // Function to check if the email is valid and update the state
     const checkEmpty = () => {
-        const isInvalid = !validateEmail(email);
+        const isEmptyUsername = username.length === 0;
+        const isEmptyPassword = password.length === 0;
 
-        // Check if password is empty
-        const isEmpty = password.length === 0;
+        setInvalid(isEmptyUsername);
+        setEmpty(isEmptyPassword);
 
-        // Update state based on validations
-        setInvalid(isInvalid);
-        setEmpty(isEmpty);
-
-        // Only show alert if there are no validation errors
-        if (!isInvalid && !isEmpty) {
-            axios.get('/api/v0.1/locations')
-                .then((response) => {
+        if (!isEmptyUsername && !isEmptyPassword) {
+            axios.get(`http://localhost:8080/api/v0.1/admins/` + username)
+            .then((response) => {
+                if (response.status === 200) {
                     console.log(response.data);
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+                    if(response.data.password === password){
+                        setLoginError(false);
+                    }
+                    else{
+                        setLoginError(true);
+                    }
+                } else {
+                    setLoginError(true);
+                }
+            })
+            .catch((error) => {
+                console.error("Login failed", error);
+                setLoginError(true);
+            });
         }
     };
 
-    const emailInput = (e) => {
-        setEmail(e.target.value);
+    const usernameInput = (e) => {
+        setUsername(e.target.value);
     };
 
     const passwordInput = (e) => {
@@ -71,19 +69,19 @@ export default function Login() {
                 </div>
                 <div>
                     <div className="flex flex-wrap align-items-center mb-3 gap-2">
-                        <label htmlFor="email" className="font-bold">
-                            Email
+                        <label htmlFor="username" className="font-bold">
+                            Username
                         </label>
                         <InputText
-                            id="email"
+                            id="username"
                             type="text"
-                            placeholder="Email address"
+                            placeholder="Username"
                             className="w-full mb-3"
-                            value={email}
-                            onChange={emailInput}
+                            value={username}
+                            onChange={usernameInput}
                         />
                         {invalid && (
-                            <Message severity="error" text="Email is invalid" />
+                            <Message severity="error" text="Username is required" />
                         )}
                     </div>
 
@@ -100,25 +98,15 @@ export default function Login() {
                             onChange={passwordInput}
                         />
                         {empty && (
-                            <Message severity="error" text="Password is invalid" />
+                            <Message severity="error" text="Password is required" />
                         )}
                     </div>
 
-                    <div className="flex align-items-center justify-content-between mb-6">
-                        <div className="flex align-items-center">
-                            <Checkbox
-                                id="rememberme"
-                                onChange={(e) => setChecked(e.checked)}
-                                checked={checked}
-                                className="mr-2"
-                            />
-                            <label htmlFor="rememberme">Remember me</label>
-                        </div>
-                        <a className="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer">
-                            Forgot your password?
-                        </a>
-                    </div>
+                    {loginError && (
+                        <Message severity="error" text="Invalid username or password" />
+                    )}
 
+                    <br/><br/>
                     <Button
                         label="Sign In"
                         icon="pi pi-user"
