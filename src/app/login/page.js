@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from 'next/navigation';
 import axios from "axios";
 import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
@@ -11,6 +12,7 @@ export default function Login() {
     const [loginError, setLoginError] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const router = useRouter();
 
 
     const checkEmpty = () => {
@@ -24,9 +26,9 @@ export default function Login() {
             axios.get(`http://localhost:8080/api/v0.1/admins/` + username)
             .then((response) => {
                 if (response.status === 200) {
-                    console.log(response.data);
                     if(response.data.password === password){
                         setLoginError(false);
+                        router.push('/calendar');
                     }
                     else{
                         setLoginError(true);

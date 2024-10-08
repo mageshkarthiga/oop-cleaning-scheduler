@@ -1,95 +1,71 @@
 "use client";
-import React from 'react';
-import { useRef, useEffect, useState, setEvents } from 'react';
+import React, { useState, useRef } from "react";
+import { TabMenu } from 'primereact/tabmenu';
 import { Button } from 'primereact/button';
-import axios from "axios";
 import Calendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
-import 'tui-date-picker/dist/tui-date-picker.css';
-import 'tui-time-picker/dist/tui-time-picker.css';
 
 export default function CalendarPage() {
-    const calendarRef = useRef(null);
+    const items = [
+        { label: 'Calendar', icon: 'pi pi-calendar-clock' },
+        { label: 'MC Submitted', icon: 'pi pi-file-arrow-up' },
+        { label: 'Products', icon: 'pi pi-list' },
+        { label: 'Messages', icon: 'pi pi-inbox' }
+    ];
 
-    const calendars = [{ id: 'cal1', name: 'Personal', backgroundColor: '#ffccff' }, { id: 'cal2', name: 'Work', backgroundColor: '#ccffcc' }];
+    const calendarRef = useRef();
+    const [currentView, setCurrentView] = useState('month');
 
-    const [events, setEvents] = useState([
-        {
-            id: '1',
-            calendarId: 'cal1',
-            title: 'Lunch',
-            category: 'time',
-            start: '2024-10-28T12:00:00',
-            end: '2024-10-28T13:30:00'
-        },
-        {
-            id: '2',
-            calendarId: 'cal2',
-            title: 'Team Meeting',
-            category: 'time',
-            start: '2024-10-28T15:00:00',
-            end: '2024-10-28T16:00:00'
-        },
-    ]);
+    const monthTemplate = (date) => {
+        const monthName = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        return `<span>${monthName} ${year}</span>`;
+    }
 
-    const onAfterRenderEvent = (event) => {
-        console.log(event.title);
+    const handlePrevMonth = () => {
+        const calendarInstance = calendarRef.current.getInstance();
+        calendarInstance.prev();
     };
 
-    useEffect(() => {
+    const handleNextMonth = () => {
         const calendarInstance = calendarRef.current.getInstance();
-        if (calendarInstance) {
-            calendarInstance.setOptions({
-                useFormPopup: true,
-                useDetailPopup: true,
-            });
-        }
-    }, []);
+        calendarInstance.next();
+    };
 
-    const renderEvents = () => {
-        const newSessions = [];
-        axios.get("http://localhost:8080/api/v0.1/contract")
-            .then((response) => {
-                console.log(response.data);
-                for (let event of response.data) {
-                    if (event.contractId == 1) {
-                        let id = "3";
-                        for (let session of event.cleaningSessionId) {
-                            console.log(session);
-                            const calSession = {
-                                id: id,
-                                calendarId: "cal2",
-                                title: session.sessionDescription,
-                                category: 'time',
-                                start: session.sessionStart,
-                                end: session.sessionEnd
-                            }
-                            newSessions.push(calSession);
-                            id++;
-                        }
-                    }
-                }
-                setEvents((prevEvents) => [...prevEvents, ...newSessions]);
-                console.log(newSessions);
-            })
-    }
+    const handleChangeView = (viewType) => {
+        setCurrentView(viewType);
+        const calendarInstance = calendarRef.current.getInstance();
+        calendarInstance.changeView(viewType, true);
+        console.log(calendarInstance.getOptions());
+    };
 
     return (
         <div>
-            <Calendar
-                ref={calendarRef}
-                height="500px"
-                view="month"
-                month={{
-                    dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-                    visibleWeeksCount: 5,
-                }}
-                calendars={calendars}
-                events={events}
-                onAfterRenderEvent={onAfterRenderEvent}
-            />
-            <div className="card flex justify-content-center">
-                <Button label="Submit" onClick={renderEvents} />
+            <div className="container">
+                <TabMenu model={items} />
+            </div>
+            <br />
+            <div className="sm:container border-4">
+                <div className="flex justify-between mb-4">
+                    <Button label="Previous Month" onClick={handlePrevMonth} icon="pi pi-chevron-left" severity="info" text />
+                    
+                    <Button label="Next Month" onClick={handleNextMonth} icon="pi pi-chevron-right" severity="info" text />
+                </div>
+                <div className="flex justify-center space-x-4 mb-4">
+                    <Button label="Day View" severity="help" onClick={() => handleChangeView('day')} />
+                    <Button label="Week View" severity="help" onClick={() => handleChangeView('week')} />
+                    <Button label="Month View" severity="help" onClick={() => handleChangeView('month')} />
+                </div>
+                <Calendar
+                    ref={calendarRef}
+                    view={currentView}
+                    month={{
+                        dayNames: ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
+                        title: monthTemplate
+                    }}
+                    calendars={[]} 
+                    events={[]} 
+                />
             </div>
         </div>
     );
