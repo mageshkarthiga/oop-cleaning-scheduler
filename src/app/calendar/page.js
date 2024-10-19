@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from 'primereact/button';
 import Calendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
+import 'tui-date-picker/dist/tui-date-picker.css';
+import 'tui-time-picker/dist/tui-time-picker.css';
 
 export default function CalendarPage() {
 
@@ -44,6 +46,54 @@ export default function CalendarPage() {
         return new Intl.DateTimeFormat('en-SG', { year: 'numeric', month: 'long' }).format(date);
     };
 
+    const calendars = [
+        {
+            id: 'G',
+            name: 'Green Calendar',
+            color: '#4CAF50',
+            backgroundColor: '#A5D6A7', 
+            dragBackgroundColor: '#81C784',
+            borderColor: '#388E3C' 
+        },
+        {
+            id: 'R',
+            name: 'Red Calendar',
+            color: '#D32F2F', 
+            backgroundColor: '#FFCDD2', 
+            dragBackgroundColor: '#EF5350', 
+            borderColor: '#C62828'
+        },
+        {
+            id: 'Y',
+            name: 'Yellow Calendar',
+            color: '#FFEB3B', 
+            backgroundColor: '#FFF176', 
+            dragBackgroundColor: '#FFCA28', 
+            borderColor: '#FBC02D'
+        }
+    ];
+    
+    
+
+    const initialEvents = [
+    {
+        id: '1',
+        calendarId: 'G',
+        title: 'Lunch',
+        category: 'time',
+        start: '2024-10-28T12:00:00',
+        end: '2024-10-28T13:30:00',
+    },
+    {
+        id: '2',
+        calendarId: 'Y',
+        title: 'Coffee Break',
+        category: 'time',
+        start: '2024-10-22T15:00:00',
+        end: '2024-10-22T15:30:00',
+    },
+];
+
     return (
         <div>
             <div className="sm:container border-4 mx-auto">
@@ -64,8 +114,10 @@ export default function CalendarPage() {
                         dayNames: ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
                         isAlways6Weeks: false,
                     }}
-                    calendars={[]} 
-                    events={[]} 
+                    calendars={calendars} 
+                    events={initialEvents} 
+                    useFormPopup={true}
+                    useDetailPopup={true}
                 />
             </div>
         </div>
