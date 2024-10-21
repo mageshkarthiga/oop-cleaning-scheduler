@@ -1,21 +1,8 @@
 'use client'
 import { useState } from 'react'
-import {
-    Dialog,
-    DialogPanel,
-    PopoverGroup,
-} from '@headlessui/react'
-import {
-    Bars3Icon,
-    XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid'
+import { PopoverGroup } from '@headlessui/react'
+import { Bars3Icon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-
-const callsToAction = [
-    { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
-    { name: 'Contact sales', href: '#', icon: PhoneIcon },
-]
 
 export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -45,7 +32,7 @@ export default function Navbar() {
                 </div>
                 <PopoverGroup className="hidden lg:flex lg:gap-x-12">
                     <Link href="/calendar" className="text-sm font-semibold leading-6 text-gray-900">Calendar</Link>
-                    <Link href="/leave" className="text-sm font-semibold leading-6 text-gray-900">Leave Approval</Link>
+                    <Link href="/leave/admin" className="text-sm font-semibold leading-6 text-gray-900">Leave Approval</Link>
                     <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
                         Company
                     </a>

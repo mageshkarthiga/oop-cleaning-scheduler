@@ -96,6 +96,8 @@ export default function CalendarPage() {
 
     return (
         <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10">Calendar</h1>
+            <br/>
             <div className="sm:container border-4 mx-auto">
                 <div className="flex justify-between items-center mb-4">
                     <Button label="Previous Month" onClick={handlePrevMonth} icon="pi pi-chevron-left" severity="info" text />
