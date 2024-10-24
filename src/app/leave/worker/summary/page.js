@@ -5,7 +5,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-import { TabView, TabPanel } from 'primereact/tabview';
 
 const fetchLeaveApplications = () => {
     return axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/pending-with-approved')
@@ -27,7 +26,7 @@ const fetchLeaveHistory = () => {
 
 export default function Leave() {
     const [pendingApplications, setPendingApplications] = useState([]);  
-    const [recentApplications, setrecentApplications] = useState([]);  
+    const [recentApplication, setRecentApplication] = useState(null);  
     const [history, setHistory] = useState([]);  
     const [loading, setLoading] = useState(true);
 
@@ -39,7 +38,7 @@ export default function Leave() {
                     fetchLeaveHistory()
                 ]);
                 setPendingApplications(Array.isArray(leaveApplications.pendingApplications) ? leaveApplications.pendingApplications : []);
-                setrecentApplications(Array.isArray(leaveApplications.mostRecentApprovedApplication) ? leaveApplications.mostRecentApprovedApplication : []);
+                setRecentApplication(leaveApplications.mostRecentApprovedApplication || null);
                 setHistory(Array.isArray(historyData) ? historyData : []);
                 setLoading(false);
             } catch (error) {
@@ -59,23 +58,6 @@ export default function Leave() {
             month: 'long',
             day: 'numeric',
         });
-    };
-
-    const handleApprove = (rowData) => {
-        console.log(`Approved application for ${rowData.workerName}`);
-        updateApplicationStatus(rowData.applicationId, "APPROVED");
-    };
-
-    const handleReject = (rowData) => {
-        console.log(`Rejected application for ${rowData.workerName}`);
-        updateApplicationStatus(rowData.applicationId, "REJECTED");
-    };
-
-    const updateApplicationStatus = (applicationId, status) => {
-        const updatedApplications = pendingApplications.map(app =>
-            app.applicationId === applicationId ? { ...app, applicationStatus: status } : app
-        );
-        setPendingApplications(updatedApplications);
     };
 
     const statusBodyTemplate = (application) => {
@@ -101,34 +83,37 @@ export default function Leave() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10">Leave Applications</h1>
+            <h1 className="text-3xl font-bold tracking-tight underline text-gray-900 mx-10">Leave Applications</h1>
             <br />
-            <div className='card m-4 border-4'>
-                <TabView>
-                    {/* Pending Applications Tab */}
-                    <TabPanel header="Pending Applications" rightIcon="pi pi-calendar-clock ml-2" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-                        <DataTable value={pendingApplications.filter(app => app.applicationStatus === "PENDING")} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
-                            <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
-                            <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
-                            <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                            <Column header="Actions" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => (
-                                <div className="flex gap-2">
-                                    <Button label="Approve" severity="success" onClick={() => handleApprove(rowData)} />
-                                    <Button label="Reject" severity="danger" onClick={() => handleReject(rowData)} />
-                                </div>
-                            )} />
-                        </DataTable>
-                    </TabPanel>
 
-                    {/* History Tab */}
-                    <TabPanel header="History" rightIcon="pi pi-history ml-2" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-                        <DataTable value={history} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
-                            <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
-                            <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
-                            <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                        </DataTable>
-                    </TabPanel>
-                </TabView>
+            {/* Most Recent Approved Application Table */}
+            <div className="card m-4 border-4">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Most Recent Approved Application</h2>
+                <DataTable value={recentApplication ? [recentApplication] : []} paginator rows={1} loading={loading}>
+                    <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
+                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                </DataTable>
+            </div>
+
+            {/* Pending Applications Table */}
+            <div className="card m-4 border-4">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Applications</h2>
+                <DataTable value={pendingApplications} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
+                    <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
+                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                </DataTable>
+            </div>
+
+            {/* Leave History Table */}
+            <div className="card m-4 border-4">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Leave History</h2>
+                <DataTable value={history} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
+                    <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
+                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                </DataTable>
             </div>
         </div>
     );
