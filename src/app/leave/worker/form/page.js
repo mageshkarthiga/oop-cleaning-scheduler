@@ -1,89 +1,125 @@
 "use client";
 import React, { useState } from 'react';
-import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
-import { PhotoIcon} from '@heroicons/react/24/solid';
+import { PhotoIcon } from '@heroicons/react/24/solid';
+import { Button } from 'primereact/button';
+import axios from 'axios'; // Import Axios
 
-export default function Example() {
-    const [workerId, setWorkerId] = useState('');
-    const [managerName, setManagerName] = useState('');
-    const [selectedLeave, setSelectedLeave] = useState(null);
+export default function LeaveForm() {
+    const [selectedLeave, setSelectedLeave] = useState('');
     const [date, setDate] = useState(null);
+    const [file, setFile] = useState(null);
+    const [error, setError] = useState('');
+    const [fileUploaded, setFileUploaded] = useState(false);
+    const [uploadedFileName, setUploadedFileName] = useState('');
 
     const leaveTypes = [
         { name: 'Medical Leave', code: 'medical' },
         { name: 'Annual Leave', code: 'annual' },
     ];
 
+    const handleFileChange = (e) => {
+        if (e.target.files.length > 0) {
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+            setUploadedFileName(selectedFile.name);
+            setFileUploaded(true);
+        } else {
+            setFileUploaded(false);
+            setUploadedFileName('');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedLeave || !date) {
+            setError('Please select a leave type and leave period.');
+            return;
+        }
+        setError('');
+
+        // Create FormData object to hold the data
+        const formData = new FormData();
+        formData.append('leaveType', selectedLeave);
+        formData.append('leavePeriod', date); // Format as needed, e.g., JSON.stringify(date)
+        if (file) {
+            formData.append('medicalCertificate', file);
+        }
+
+        try {
+            // Make the API request
+            // const response = await axios.post('https://yourapi.com/leaves', formData, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data', // Set appropriate headers for file upload
+            //     },
+            // });
+            // console.log('Response:', response.data);
+            // Handle success (e.g., reset form or show success message)
+            setSelectedLeave('');
+            setDate(null);
+            setFile(null);
+            setFileUploaded(false);
+            setUploadedFileName('');
+            alert('Leave application submitted successfully!');
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            // Handle error (e.g., show error message)
+            setError('Failed to submit the application. Please try again.');
+        }
+    };
+
     return (
-        <form className="mx-4 border-4 p-4">
+        <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
             <div className="space-y-6">
                 <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Leave Application Form</h2>
 
-                {/* Worker ID, Manager Name, and Leave Type */}
+                {/* Leave Type and Leave Period on the same row */}
                 <div className="flex flex-row space-x-8">
-                    {/* Worker ID */}
-                    <div className="flex-1">
-                        <label htmlFor="worker-id" className="block text-sm font-medium leading-6 text-gray-900">
-                            Worker ID
-                        </label>
-                        <div className="mt-2">
-                            <InputText
-                                id="worker-id"
-                                value={workerId}
-                                onChange={(e) => setWorkerId(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                placeholder="Enter Worker ID"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Manager Name */}
-                    <div className="flex-1">
-                        <label htmlFor="manager-name" className="block text-sm font-medium leading-6 text-gray-900">
-                            Manager Name
-                        </label>
-                        <div className="mt-2">
-                            <InputText
-                                id="manager-name"
-                                value={managerName}
-                                onChange={(e) => setManagerName(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                placeholder="Enter Manager Name"
-                            />
-                        </div>
-                    </div>
-
                     <div className="flex-1">
                         <label htmlFor="leave-type" className="block text-sm font-medium leading-6 text-gray-900">
                             Leave Type
                         </label>
                         <div className="mt-2">
-                            <Dropdown
+                            <select
                                 id="leave-type"
                                 value={selectedLeave}
-                                onChange={(e) => setSelectedLeave(e.value)}
-                                options={leaveTypes}
-                                optionLabel="name"
-                                className="block w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                itemTemplate={(item) => (
-                                    <div className="p-2">{item.name}</div>
-                                )}
-                                panelClassName="max-h-60 overflow-y-auto"
-                                placeholder="Select Leave Type" // Ensure placeholder visibility
+                                onChange={(e) => setSelectedLeave(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                            >
+                                <option value="" disabled>Select Leave Type</option>
+                                {leaveTypes.map((leave) => (
+                                    <option key={leave.code} value={leave.code}>
+                                        {leave.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <label htmlFor="period" className="block text-sm font-medium leading-6 text-gray-900">
+                            Leave Period
+                        </label>
+                        <div className="mt-2">
+                            <Calendar 
+                                id="period" 
+                                value={date} 
+                                onChange={(e) => setDate(e.value)} 
+                                dateFormat="dd/mm/yy" 
+                                selectionMode="range" 
+                                readOnlyInput 
+                                className="w-full" 
+                                hideOnRangeSelection 
+                                showTime 
+                                hourFormat="12" 
                             />
                         </div>
                     </div>
                 </div>
-                <div className='flex flex-row space-x-8 mt-10'>
-                    <div className="flex-auto">
-                        <label htmlFor="period" className="block text-sm font-medium leading-6 text-gray-900 mb-2">
-                            Leave Period
-                        </label>
-                        <Calendar id="period" value={date} onChange={(e) => setDate(e.value)} dateFormat="dd/mm/yy" selectionMode="range" readOnlyInput hideOnRangeSelection className="block rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 w-1/2" />
-                    </div>
-                </div>
+
+                {/* Error message display */}
+                {error && <div className="text-red-600">{error}</div>}
+
+                {/* Upload Medical Certificate */}
                 <div className="col-span-full">
                     <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
                         Medical Certificate
@@ -97,7 +133,13 @@ export default function Example() {
                                     className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                                 >
                                     <span>Upload a file</span>
-                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" />
+                                    <input 
+                                        id="file-upload" 
+                                        name="file-upload" 
+                                        type="file" 
+                                        className="sr-only" 
+                                        onChange={handleFileChange} 
+                                    />
                                 </label>
                                 <p className="pl-1">or drag and drop</p>
                             </div>
@@ -105,18 +147,15 @@ export default function Example() {
                         </div>
                     </div>
                 </div>
+                {/* Success Message */}
+                {fileUploaded && (
+                    <p className="mt-2 text-green-600">File "{uploadedFileName}" uploaded successfully!</p>
+                )}
             </div>
 
+            {/* Buttons */}
             <div className="mt-6 flex items-center justify-end gap-x-6">
-                <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                    Save
-                </button>
+                <Button label="Submit" type="submit" outlined />
             </div>
         </form>
     );
