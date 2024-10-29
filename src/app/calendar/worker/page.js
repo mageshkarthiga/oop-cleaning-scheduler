@@ -67,7 +67,7 @@ export default function CalendarPage() {
     };
 
     const handleEventClick = (event) => {
-        router.push(`/some-path/${event.id}`);
+        router.push(`/shift/${event.event.id}`);
     };
 
     const monthTemplate = (date) => {
