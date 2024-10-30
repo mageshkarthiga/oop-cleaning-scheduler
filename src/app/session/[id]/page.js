@@ -76,8 +76,8 @@ export default function SessionDetails() {
 
 
     return (
-        <div>
-            <Card title={`Details for Session ${id}`} className="m-auto p-5">
+        <div className='container m-auto'>
+            <Card title={`Details for Session ${id}`} className="p-5">
                 <p><strong>Session Start:</strong> {session.sessionStartDate} at {session.sessionStartTime}</p>
                 <br/>
                 <p><strong>Session End:</strong> {session.sessionEndDate} at {session.sessionEndTime}</p>

@@ -102,8 +102,8 @@ export default function DetailsPage() {
     };
 
     return (
-        <div className="m-auto">
-            <Card title={`Details for ${shift.sessionDescription || `Session ${id}`}`} className="m-auto p-5">
+        <div className="container m-auto">
+            <Card title={`Details for ${shift.sessionDescription || `Shift ${id}`}`} className="p-5">
                 <p><strong>Shift Start:</strong> {shift.sessionStartDate} at {shift.sessionStartTime}</p>
                 <br/>
                 <p><strong>Shift End:</strong> {shift.sessionEndDate} at {shift.sessionEndTime}</p>
@@ -136,6 +136,7 @@ export default function DetailsPage() {
                     )}
                 </div>
                 <div className='container w-1/2 m-auto pt-4'>
+                    <p><strong>Location:</strong></p>
                     <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} onLoad={() => console.log('Maps API has loaded.')}>
                         <Map
                             zoom={15}
