@@ -44,7 +44,7 @@ export default function CalendarView() {
                     fixedWeekCount={false}
                 />
                 <br/>
-                <Button label="Add Session" icon="pi pi-plus-circle" iconPos="right" severity="help"/>
+                <Button label="Add Session" icon="pi pi-plus-circle" iconPos="right" severity="help" rounded/>
             </div>
         </div>
     )

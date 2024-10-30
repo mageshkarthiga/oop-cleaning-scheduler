@@ -102,7 +102,7 @@ export default function DetailsPage() {
     };
 
     return (
-        <div className="mt-4 m-auto">
+        <div className="m-auto">
             <Card title={`Details for ${shift.sessionDescription || `Session ${id}`}`} className="m-auto p-5">
                 <p><strong>Shift Start:</strong> {shift.sessionStartDate} at {shift.sessionStartTime}</p>
                 <br/>
@@ -135,16 +135,18 @@ export default function DetailsPage() {
                         )
                     )}
                 </div>
+                <div className='container w-1/2 m-auto pt-4'>
+                    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} onLoad={() => console.log('Maps API has loaded.')}>
+                        <Map
+                            zoom={15}
+                            center={{ lat: shift.latitude || 1.284540, lng: shift.longitude || 103.852028 }}
+                            style={{ width: '100%', height: '400px' }}
+                        >
+                            <Marker position={{ lat: shift.latitude || 1.284540, lng: shift.longitude || 103.852028 }} />
+                        </Map>
+                    </APIProvider>
+                </div>
             </Card>
-            <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} onLoad={() => console.log('Maps API has loaded.')}>
-                <Map
-                    zoom={10}
-                    center={{ lat: shift.latitude || 1.284540, lng: shift.longitude || 103.852028 }}
-                    style={{ width: '100%', height: '400px' }}
-                >
-                    <Marker position={{ lat: shift.latitude || 1.284540, lng: shift.longitude || 103.852028 }} />
-                </Map>
-            </APIProvider>
         </div>
     );
 }
