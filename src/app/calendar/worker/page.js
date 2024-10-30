@@ -1,13 +1,10 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
-    const router = useRouter();
 
     useEffect(() => {
         async function fetchEvents() {

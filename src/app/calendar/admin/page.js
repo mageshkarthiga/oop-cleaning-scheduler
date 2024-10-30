@@ -1,27 +1,25 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
-    const router = useRouter();
-
     useEffect(() => {
         async function fetchEvents() {
             try {
                 const response = await fetch('http://localhost:8080/api/v0.1/cleaningSession');
                 const data = await response.json();
-                console.log(data);
-                // const formattedEvents = data.map(event => ({
-                //     id: event.shiftId.toString(),
-                //     title: event.sessionDescription || 'Untitled Session',
-                //     start:`${event.sessionStartDate}T${event.sessionStartTime}`,
-                //     backgroundColor:'green'
-                // }));
-                // setEvents(formattedEvents);
+                const formattedEvents = data.map(cleaningSession => ({
+                    id: cleaningSession.cleaningSessionId.toString(), 
+                    title: cleaningSession.sessionDescription,
+                    start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
+                    end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
+                    backgroundColor: cleaningSession.workersBudgeted === 0 ? "red" : "green",
+                    url: `/session/${cleaningSession.cleaningSessionId}`
+                }));
+                setEvents(formattedEvents);
             } catch (error) {
                 console.error("Error fetching events:", error);
             }
@@ -45,6 +43,8 @@ export default function CalendarView() {
                     }}
                     fixedWeekCount={false}
                 />
+                <br/>
+                <Button label="Add Session" icon="pi pi-plus-circle" iconPos="right" severity="help"/>
             </div>
         </div>
     )

@@ -105,17 +105,20 @@ export default function DetailsPage() {
         <div className="mt-4 m-auto">
             <Card title={`Details for ${shift.sessionDescription || `Session ${id}`}`} className="m-auto p-5">
                 <p><strong>Shift Start:</strong> {shift.sessionStartDate} at {shift.sessionStartTime}</p>
+                <br/>
                 <p><strong>Shift End:</strong> {shift.sessionEndDate} at {shift.sessionEndTime}</p>
+                <br/>
                 <p><strong>Status: </strong>
                     <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
                 </p>
-                <br /><br />
+                <br/><br/>
                 <div className='space-x-4'>
                     {!isSessionFinished && (
                         isSessionStarted ? (
                             <Button
                                 label="End Session"
                                 icon="pi pi-times-circle"
+                                iconPos="right"
                                 severity="danger"
                                 rounded
                                 onClick={endSession}
@@ -124,6 +127,7 @@ export default function DetailsPage() {
                             <Button
                                 label="Start Session"
                                 icon="pi pi-check-circle"
+                                iconPos="right"
                                 severity="success"
                                 rounded
                                 onClick={startSession}
