@@ -12,18 +12,16 @@ export default function CalendarView() {
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await fetch('http://localhost:8080/api/v0.1/shift/worker/2');
+                const response = await fetch('http://localhost:8080/api/v0.1/cleaningSession');
                 const data = await response.json();
                 console.log(data);
-                const formattedEvents = data.map(event => ({
-                    id: event.shiftId.toString(),
-                    title: event.sessionDescription || 'Untitled Session',
-                    start:`${event.sessionStartDate}T${event.sessionStartTime}`,
-                    end:`${event.sessionEndDate}T${event.sessionEndTime}`,
-                    backgroundColor:"red",
-                    url: `/shift/${event.shiftId}`
-                }));
-                setEvents(formattedEvents);
+                // const formattedEvents = data.map(event => ({
+                //     id: event.shiftId.toString(),
+                //     title: event.sessionDescription || 'Untitled Session',
+                //     start:`${event.sessionStartDate}T${event.sessionStartTime}`,
+                //     backgroundColor:'green'
+                // }));
+                // setEvents(formattedEvents);
             } catch (error) {
                 console.error("Error fetching events:", error);
             }
@@ -33,7 +31,6 @@ export default function CalendarView() {
     }, []);
 
     return (
-        
         <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10 mb-4">Calendar</h1>
             <div className="container border-4 mx-auto p-4">

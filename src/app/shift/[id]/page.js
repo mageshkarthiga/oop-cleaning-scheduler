@@ -104,8 +104,8 @@ export default function DetailsPage() {
     return (
         <div className="mt-4 m-auto">
             <Card title={`Details for ${shift.sessionDescription || `Session ${id}`}`} className="m-auto p-5">
-                <p><strong>Start:</strong> {shift.sessionStartDate} at {shift.sessionStartTime}</p>
-                <p><strong>End:</strong> {shift.sessionEndDate} at {shift.sessionEndTime}</p>
+                <p><strong>Shift Start:</strong> {shift.sessionStartDate} at {shift.sessionStartTime}</p>
+                <p><strong>Shift End:</strong> {shift.sessionEndDate} at {shift.sessionEndTime}</p>
                 <p><strong>Status: </strong>
                     <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
                 </p>
