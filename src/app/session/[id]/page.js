@@ -9,7 +9,6 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import axios from 'axios';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 export default function SessionDetails() {
     const { id } = useParams();
@@ -26,7 +25,7 @@ export default function SessionDetails() {
                 foundSession.planningStage = "EMBER"
                 foundSession.workersBudgeted = 1;
                 if (foundSession.planningStage != "RED") {
-                    console.log(foundSession.shifts)
+                    console.log(foundSession)
                     const allWorkers = [];
                     foundSession.shifts.forEach(shift => {
                         allWorkers.push(shift.worker);
@@ -47,7 +46,7 @@ export default function SessionDetails() {
     if (error) return <div>Error: {error}</div>;
     if (!session) return <div>No data found for ID {id}</div>;
 
-    const getSeverity = (session) => {
+    const getPlanningStageSeverity = (session) => {
         switch (session.planningStage) {
             case 'GREEN':
                 return 'success';
@@ -73,32 +72,60 @@ export default function SessionDetails() {
         }
     }
 
+    const getSessionStatusSeverity = (session) => {
+        switch (session.sessionStatus) {
+            case 'NOT_STARTED':
+                return 'danger';
+            case 'WORKING':
+                return 'warning';
+            case 'FINISHED':
+                return 'success';
+            default:
+                return null;
+        }
+    }
+
 
 
     return (
-        <div className='container m-auto'>
-            <Card title={`Details for Session ${id}`} className="p-5">
-                <p><strong>Session Start:</strong> {session.sessionStartDate} at {session.sessionStartTime}</p>
-                <br/>
-                <p><strong>Session End:</strong> {session.sessionEndDate} at {session.sessionEndTime}</p>
-                <br/>
-                <p>
-                    <strong>Planning Status: </strong>
-                    <Tag value={getPlanningStage(session)} severity={getSeverity(session)} />
-                </p>
-                <br/>
-                <p><strong>Number of Workers Assigned:</strong> {session.workersBudgeted}</p>
-                <br/>
-                <p><strong>Workers Assigned:</strong> </p>
-                <br/>
-                <div className='container w-1/2'>
-                    <DataTable value={workers} size='small'>
-                        <Column field="name" header="Name" style={{ color: "black", backgroundColor: "white" }} />
-                        <Column field="phone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
-                    </DataTable>
+        <div className='container m-auto p-5'>
+            <Card title={`Details for Session ${id}`} className="shadow-lg rounded-lg p-6">
+                <div className="mb-4">
+                    <p className="text-lg font-medium">
+                        <strong>Session Start:</strong> {session.sessionStartDate} at {session.sessionStartTime}
+                    </p>
+                    <p className="text-lg font-medium">
+                        <strong>Session End:</strong> {session.sessionEndDate} at {session.sessionEndTime}
+                    </p>
+                </div>
+                <div className="mb-4">
+                    <p className="text-lg font-medium">
+                        <strong>Planning Status:</strong>
+                        <Tag value={getPlanningStage(session)} severity={getPlanningStageSeverity(session)} className="ml-2" />
+                    </p>
+                    {/* <p className="text-lg font-medium">
+                        <strong>Number of Workers Assigned:</strong> {session.workersBudgeted}
+                    </p> */}
+                </div>
+                <div className="mb-4">
+                    <p className="text-lg font-medium">
+                        <strong>Workers Assigned:</strong>
+                    </p>
+                    <div className='container w-full'>
+                        <DataTable value={workers} size='small'>
+                            <Column field="name" header="Name" style={{ color: "black", backgroundColor: "white" }} />
+                            <Column field="phone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
+                        </DataTable>
+                    </div>
+                </div>
+                <div>
+                    <p className="text-lg font-medium">
+                        <strong>Session Status:</strong>
+                        <Tag value={session.workingStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
+                    </p>
                 </div>
             </Card>
-
         </div>
+
     )
 }

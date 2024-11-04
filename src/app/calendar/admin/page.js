@@ -12,7 +12,7 @@ export default function CalendarView() {
                 const response = await fetch('http://localhost:8080/api/v0.1/cleaningSession');
                 const data = await response.json();
                 const formattedEvents = data.map(cleaningSession => ({
-                    id: cleaningSession.cleaningSessionId.toString(), 
+                    id: cleaningSession.cleaningSessionId.toString(),
                     title: cleaningSession.sessionDescription,
                     start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
                     end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
@@ -39,12 +39,10 @@ export default function CalendarView() {
                     headerToolbar={{
                         left: 'prev,next',
                         center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
                     }}
                     fixedWeekCount={false}
                 />
-                <br/>
-                <Button label="Add Session" icon="pi pi-plus-circle" iconPos="right" severity="help" rounded/>
             </div>
         </div>
     )

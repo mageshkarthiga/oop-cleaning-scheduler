@@ -20,11 +20,10 @@ export default function LeaveForm() {
         { name: 'Annual Leave', code: 'annual' },
     ];
 
-    // Calculate the minimum start date and time by adding 3 hours
     const today = new Date();
-    const minDate = today.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-    today.setHours(today.getHours() + 3); // Add 3 hours
-    const minTime = today.toTimeString().split(' ')[0].slice(0, 5); // Get the new time in HH:MM format
+    const minDate = today.toISOString().split('T')[0];
+    today.setHours(today.getHours() + 3); 
+    const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
 
     const handleFileChange = (e) => {
         if (e.target.files.length > 0) {
