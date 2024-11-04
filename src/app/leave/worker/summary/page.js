@@ -8,26 +8,26 @@ import { Tag } from 'primereact/tag';
 
 const fetchLeaveApplications = () => {
     return axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/pending-with-approved')
-        .then(response => response.data) 
+        .then(response => response.data)
         .catch(error => {
             console.error("Error fetching leave applications", error);
-            return [];  
+            return [];
         });
 };
 
 const fetchLeaveHistory = () => {
     return axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/history')
-        .then(response => response.data) 
+        .then(response => response.data)
         .catch(error => {
             console.error("Error fetching leave history", error);
-            return []; 
+            return [];
         });
 };
 
 export default function Leave() {
-    const [pendingApplications, setPendingApplications] = useState([]);  
-    const [recentApplication, setRecentApplication] = useState(null);  
-    const [history, setHistory] = useState([]);  
+    const [pendingApplications, setPendingApplications] = useState([]);
+    const [recentApplication, setRecentApplication] = useState(null);
+    const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -85,12 +85,30 @@ export default function Leave() {
         <div>
             <h1 className="text-3xl font-bold tracking-tight underline text-gray-900 mx-10">Leave Applications</h1>
             <br />
-
+            <div className="card mx-10">
+                <h2 className="text-xl font-semibold">Leave Days Left</h2>
+                <div className="mt-2">
+                    <p>
+                        Medical Leave Balance:&nbsp;
+                        <span className={`font-bold ${recentApplication.medicalLeaveBalance === 0 ? 'text-red-500' : 'text-green-500'}`}>
+                            {recentApplication.medicalLeaveBalance}
+                        </span>
+                    </p>
+                    <p>
+                        Other Leave Balance:&nbsp;
+                        <span className={`font-bold ${recentApplication.otherLeaveBalance === 0 ? 'text-red-500' : 'text-green-500'}`}>
+                            {recentApplication.otherLeaveBalance}
+                        </span>
+                    </p>
+                </div>
+            </div>
             {/* Most Recent Approved Application Table */}
             <div className="card m-4 border-4">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Most Recent Approved Application</h2>
                 <DataTable value={recentApplication ? [recentApplication] : []} paginator rows={1} loading={loading}>
                     <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave Start Date" field="affectedShiftStart" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftStart")} style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave End Date" field="affectedShiftEnd" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftEnd")} style={{ color: "black", backgroundColor: "white" }} />
                     <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" style={{ color: "black", backgroundColor: "white" }} />
                     <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
                 </DataTable>
@@ -101,7 +119,9 @@ export default function Leave() {
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Applications</h2>
                 <DataTable value={pendingApplications} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
                     <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
-                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave Start Date" field="affectedShiftStart" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftStart")} style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave End Date" field="affectedShiftEnd" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftEnd")} style={{ color: "black", backgroundColor: "white" }} />
+                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" style={{ color: "black", backgroundColor: "white" }} />
                     <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
                 </DataTable>
             </div>
@@ -111,7 +131,9 @@ export default function Leave() {
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Leave History</h2>
                 <DataTable value={history} paginator rows={5} loading={loading} sortField="applicationSubmitted" sortOrder={-1}>
                     <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }} />
-                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave Start Date" field="affectedShiftStart" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftStart")} style={{ color: "black", backgroundColor: "white" }} />
+                    <Column header="Leave End Date" field="affectedShiftEnd" body={(rowData) => dateBodyTemplate(rowData, "affectedShiftEnd")} style={{ color: "black", backgroundColor: "white" }} />
+                    <Column field="applicationSubmitted" body={(rowData) => dateBodyTemplate(rowData, "applicationSubmitted")} header="Date Submitted" style={{ color: "black", backgroundColor: "white" }} />
                     <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
                 </DataTable>
             </div>
