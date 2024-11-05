@@ -17,7 +17,11 @@ export default function CalendarView() {
                     title: cleaningSession.sessionDescription,
                     start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
                     end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
-                    backgroundColor: cleaningSession.workersBudgeted === 0 ? "red" : "green",
+                    backgroundColor: cleaningSession.planningStage === "EMBER" 
+                        ? "orange" 
+                        : cleaningSession.planningStage === "GREEN" 
+                        ? "green" 
+                        : "red",
                     url: `/session/${cleaningSession.cleaningSessionId}`
                 }));
                 setEvents(formattedEvents);

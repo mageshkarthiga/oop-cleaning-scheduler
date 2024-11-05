@@ -6,22 +6,24 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 
-const fetchLeaveApplications = () => {
-    return axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/pending-with-approved')
-        .then(response => response.data)
-        .catch(error => {
-            console.error("Error fetching leave applications", error);
-            return [];
-        });
+const fetchLeaveApplications = async () => {
+    try {
+        const response = await axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/pending-with-approved');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching leave applications", error);
+        return [];
+    }
 };
 
-const fetchLeaveHistory = () => {
-    return axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/history')
-        .then(response => response.data)
-        .catch(error => {
-            console.error("Error fetching leave history", error);
-            return [];
-        });
+const fetchLeaveHistory = async () => {
+    try {
+        const response = await axios.get('http://localhost:8080/api/v0.1/leave-applications/worker/1/history');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching leave history", error);
+        return [];
+    }
 };
 
 export default function Leave() {

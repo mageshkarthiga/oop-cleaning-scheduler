@@ -38,7 +38,7 @@ export default function ContractForm() {
     // Fetch clients
     const fetchClients = async () => {
         try {
-            // const response = await axios.get('https://yourapi.com/clients');
+            const response = await axios.get('http://localhost:8080/api/v0.1/client');
             setClients(response.data);
         } catch (error) {
             console.error('Error fetching clients:', error);
@@ -112,7 +112,7 @@ export default function ContractForm() {
                             >
                                 <option value="" disabled>Select Client</option>
                                 {clients.map((client) => (
-                                    <option key={client.id} value={client.name}>
+                                    <option key={client.clientId} value={client.name}>
                                         {client.name}
                                     </option>
                                 ))}
