@@ -66,7 +66,7 @@ const GoogleMap = ({ origin, destination }) => {
         <div className='container' style={{ width: '400px' }}>
             <h2>{selected.summary}</h2>
             <p><strong>Travel Duration:</strong> {leg.duration?.text}</p>
-            <Button label="View Directions in Google Maps" icon="pi pi-map" onClick={openGoogleMaps} />
+            <Button label="View Directions in Google Maps &nbsp;" icon="pi pi-map" onClick={openGoogleMaps} iconPos="right" size='small' outlined/>
         </div>
     );
 };
@@ -87,27 +87,18 @@ export default function DetailsPage() {
             try {
                 const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
                 const data = response.data;
-                
-                data.location = {
-                    "locationId": 2,
-                    "address": "61 Kampong Arang Road",
-                    "postalCode": "438178",
-                    "unitNumber": null,
-                    "latitude": 1.29908744640975,
-                    "longitude": 103.881565630968,
-                    "subzone": null
-                };
-                data.worker.location = {
+                data.worker.homeLocation = {
                     "locationId": 1,
                     "address": "88 Corporation Road",
                     "postalCode": "649823",
                     "unitNumber": "#11-25",
-                    "latitude": 1.34260353007147,
-                    "longitude": 103.716508444052,
+                    "latitude": 1.29908744640975,
+                    "longitude": 103.881565630968,
                     "subzone": null
                 };
-                const workerLocation = data.worker.location;
+                const workerLocation = data.worker.homeLocation;
                 const shiftLocation = data.location;
+                console.log(data)
 
                 // Update state with origin and destination
                 setOrigin(`${workerLocation.latitude},${workerLocation.longitude}`);
@@ -196,6 +187,16 @@ export default function DetailsPage() {
         }
     };
 
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-GB', {
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -203,65 +204,68 @@ export default function DetailsPage() {
 
     return (
         <APIProvider apiKey={API_KEY}>
-            <div className="container m-auto p-4">
-                <Card title={`Details for Shift ${shift.shiftId || `Shift ${id}`}`} className="p-5">
-                    <div className="flex flex-col mb-4">
-                        <p className="font-semibold">Scheduled Shift Start:</p>
-                        <p>{shift.sessionStartDate} at {shift.sessionStartTime}</p>
-                    </div>
-                    <div className="flex flex-col mb-4">
-                        <p className="font-semibold">Scheduled Shift End:</p>
-                        <p>{shift.sessionEndDate} at {shift.sessionEndTime}</p>
-                    </div>
-
-                    <p className="font-semibold">Shift Address:</p>
-                    <p>{shift.location.address}</p>
-
-                    <p className="font-semibold mt-4">Status:
-                        <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
-                    </p>
-
-                    <div className='mt-4 mb-4'>
-                        <h3 className="text-lg font-semibold">Shift Actions:</h3>
-                        <div className="flex flex-col space-y-2 w-1/4">
-                            {!isSessionFinished && (
-                                isSessionStarted ? (
-                                    <Button
-                                        label="End Session"
-                                        icon="pi pi-times-circle"
-                                        iconPos="right"
-                                        severity="danger"
-                                        rounded
-                                        onClick={endSession}
-                                    />
-                                ) : (
-                                    <Button
-                                        label="Start Session"
-                                        icon="pi pi-check-circle"
-                                        iconPos="right"
-                                        severity="success"
-                                        rounded
-                                        onClick={startSession}
-                                    />
-                                )
-                            )}
+        <div className="container m-auto p-4">
+            <Card title={`Details for Shift ${shift.shiftId || `Shift ${id}`}`} className="m-5">
+                <div className="flex">
+                    {/* Column for details */}
+                    <div className="flex-1">
+                        <div className="flex flex-col mb-5">
+                            <p className="font-semibold">Scheduled Shift Start:</p>
+                            <p>{formatDate(shift.sessionStartDate)} at {shift.sessionStartTime}</p>
+                        </div>
+                        <div className="flex flex-col mb-5">
+                            <p className="font-semibold">Scheduled Shift End:</p>
+                            <p>{formatDate(shift.sessionEndDate)} at {shift.sessionEndTime}</p>
+                        </div>
+    
+                        <p className="font-semibold">Shift Address:</p>
+                        <p>{shift.location.address}</p>
+    
+                        <p className="font-semibold mt-4">Status:
+                            <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
+                        </p>
+    
+                        <div className='mt-4 mb-5'>
+                            <h3 className="text-lg font-semibold">Shift Actions:</h3>
+                            <div className="flex flex-col space-y-2 w-1/2 mb-5">
+                                {!isSessionFinished && (
+                                    isSessionStarted ? (
+                                        <Button
+                                            label="End Session"
+                                            icon="pi pi-times-circle"
+                                            iconPos="right"
+                                            severity="danger"
+                                            onClick={endSession}
+                                        />
+                                    ) : (
+                                        <Button
+                                            label="Start Session"
+                                            icon="pi pi-check-circle"
+                                            iconPos="right"
+                                            severity="success"
+                                            onClick={startSession}
+                                        />
+                                    )
+                                )}
+                            </div>
+                            <GoogleMap origin={origin} destination={destination} />
                         </div>
                     </div>
-
-                    <div className='mt-4'>
-                        <GoogleMap origin={origin} destination={destination} />
+    
+                    {/* Column for the map */}
+                    <div className='ml-4' style={{ flex: '0 0 450px' }}>
+                        <Map
+                            defaultCenter={{ lat: shift.worker.homeLocation.latitude || 0, lng: shift.worker.homeLocation.longitude || 0 }}
+                            defaultZoom={9}
+                            gestureHandling="greedy"
+                            fullscreenControl={false}
+                            style={{ width: '100%', height: '450px' }}
+                        />
                     </div>
-                </Card>
-
-                <Map
-                    defaultCenter={{ lat: shift.worker.location.latitude || 0, lng: shift.worker.location.longitude || 0 }}
-                    defaultZoom={9}
-                    gestureHandling="greedy"
-                    fullscreenControl={false}
-                    style={{ width: '100%', height: '400px' }}
-                >
-                </Map>
-            </div>
-        </APIProvider>
+                </div>
+            </Card>
+        </div>
+    </APIProvider>
+    
     );
 }

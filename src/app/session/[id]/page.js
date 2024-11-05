@@ -22,8 +22,6 @@ export default function SessionDetails() {
             .then((response) => {
                 const fetchedData = response.data;
                 const foundSession = fetchedData.find(cleaningSession => cleaningSession.cleaningSessionId.toString() === id);
-                foundSession.planningStage = "EMBER"
-                foundSession.workersBudgeted = 1;
                 if (foundSession.planningStage != "RED") {
                     console.log(foundSession)
                     const allWorkers = [];
@@ -121,7 +119,7 @@ export default function SessionDetails() {
                 <div>
                     <p className="text-lg font-medium">
                         <strong>Session Status:</strong>
-                        <Tag value={session.workingStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
+                        <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
                     </p>
                 </div>
             </Card>

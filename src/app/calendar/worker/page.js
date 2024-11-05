@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import axios from 'axios';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
@@ -9,12 +10,12 @@ export default function CalendarView() {
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await fetch('http://localhost:8080/api/v0.1/shift/worker/2');
-                const data = await response.json();
+                const response = await axios.get('http://localhost:8080/api/v0.1/shift/worker/2');
+                const data = response.data;
                 console.log(data);
                 const formattedEvents = data.map(event => ({
                     id: event.shiftId.toString(),
-                    title: event.sessionDescription || 'Untitled Session',
+                    title: 'Shift ' + event.shiftId,
                     start:`${event.sessionStartDate}T${event.sessionStartTime}`,
                     end:`${event.sessionEndDate}T${event.sessionEndTime}`,
                     backgroundColor:"red",

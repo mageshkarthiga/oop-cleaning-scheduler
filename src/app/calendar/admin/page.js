@@ -3,14 +3,15 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'primereact/button';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import axios from 'axios';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await fetch('http://localhost:8080/api/v0.1/cleaningSession');
-                const data = await response.json();
+                const response = await axios.get('http://localhost:8080/api/v0.1/cleaningSession');
+                const data = response.data;
                 const formattedEvents = data.map(cleaningSession => ({
                     id: cleaningSession.cleaningSessionId.toString(),
                     title: cleaningSession.sessionDescription,

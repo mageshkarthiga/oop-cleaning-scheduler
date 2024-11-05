@@ -202,7 +202,7 @@ export default function LeaveForm() {
 
             {/* Buttons */}
             <div className="mt-6 flex items-center justify-end gap-x-6">
-                <Button label="Submit" type="submit" outlined />
+                <Button label="Submit" type="submit" />
             </div>
         </form>
     );
