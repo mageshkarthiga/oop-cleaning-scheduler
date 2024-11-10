@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card } from 'primereact/card';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -16,20 +16,41 @@ export default function SessionDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [workers, setWorkers] = useState([]);
+    const [selectedWorker, setSelectedWorker] = useState([]);
+    const [availableWorker, setAvailableWorker] = useState([]);
+    const [needWorkers, setNeedWorkers] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         axios.get(`http://localhost:8080/api/v0.1/cleaningSession`)
             .then((response) => {
                 const fetchedData = response.data;
                 const foundSession = fetchedData.find(cleaningSession => cleaningSession.cleaningSessionId.toString() === id);
-                if (foundSession.planningStage != "RED") {
-                    console.log(foundSession)
-                    const allWorkers = [];
-                    foundSession.shifts.forEach(shift => {
-                        allWorkers.push(shift.worker);
-                    });
-                    setWorkers(allWorkers);
+                foundSession.planningStage = "EMBER";
+                console.log(foundSession);
+
+                if (!foundSession) {
+                    setError('Session not found');
+                    setLoading(false);
+                    return;
                 }
+
+                if (foundSession.planningStage === "EMBER" || foundSession.planningStage === "RED") {
+                    setNeedWorkers(true);
+                    addWorkers(foundSession.cleaningSessionId);
+                }
+
+                const allWorkers = foundSession.shifts
+                    ? foundSession.shifts.map(shift => {
+                        if (shift.worker) {
+                            return { ...shift.worker, shiftId: shift.shiftId }; // Include shiftId with worker details
+                        } else {
+                            console.log("Shift worker is null or undefined");
+                            return null;
+                        }
+                    }).filter(worker => worker !== null)
+                    : [];
+                setWorkers(allWorkers);
                 setSession(foundSession);
                 setLoading(false);
             })
@@ -39,6 +60,16 @@ export default function SessionDetails() {
                 setLoading(false);
             });
     }, [id]);
+
+    const addWorkers = async (shiftId) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/v0.1/workers`);
+            setAvailableWorker(response.data);
+        } catch (error) {
+            console.error("Error getting workers:", error);
+            setError('Failed to retrieve workers. Please try again later.');
+        }
+    };
 
     if (loading) return <ProgressSpinner />;
     if (error) return <div>Error: {error}</div>;
@@ -83,7 +114,22 @@ export default function SessionDetails() {
         }
     }
 
+    const handleRowSelect = (shiftId) => {
+        if (typeof window !== "undefined") {
+            router.push(`/shift/${shiftId}`);
+        }
+    };
 
+    const actionBodyTemplate = (rowData) => {
+        return (
+            <Button 
+                label="View" 
+                severity="help" 
+                outlined
+                onClick={() => handleRowSelect(rowData.shiftId)} 
+            />
+        );
+    };
 
     return (
         <div className='container m-auto p-5'>
@@ -101,19 +147,40 @@ export default function SessionDetails() {
                         <strong>Planning Status:</strong>
                         <Tag value={getPlanningStage(session)} severity={getPlanningStageSeverity(session)} className="ml-2" />
                     </p>
-                    {/* <p className="text-lg font-medium">
-                        <strong>Number of Workers Assigned:</strong> {session.workersBudgeted}
-                    </p> */}
                 </div>
                 <div className="mb-4">
                     <p className="text-lg font-medium">
-                        <strong>Workers Assigned:</strong>
+                        <strong>Shift Assigned To:</strong>
                     </p>
-                    <div className='container w-full'>
+                    <div className='container w-3/4'>
                         <DataTable value={workers} size='small'>
                             <Column field="name" header="Name" style={{ color: "black", backgroundColor: "white" }} />
                             <Column field="phone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
+                            <Column body={actionBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
                         </DataTable>
+                    </div>
+                    <br />
+                    <p className="text-lg font-medium">
+                        <strong>Available Workers:</strong>
+                    </p>
+                    <div className='w-3/4'>
+                        {needWorkers && (
+                            <div className="w-3/4">
+                                <select
+                                    value={availableWorker}
+                                    onChange={(e) => setSelectedWorker([...e.target.selectedOptions].map(option => option.value))}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                    multiple
+                                >
+                                    {workers.map((worker, index) => (
+                                        <option key={index} value={worker.id} id={worker.id}>
+                                            {worker.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                     </div>
                 </div>
                 <div>
@@ -122,8 +189,9 @@ export default function SessionDetails() {
                         <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
                     </p>
                 </div>
+                <br/>
+                <Button label="Update" severity='success'/>
             </Card>
         </div>
-
-    )
+    );
 }

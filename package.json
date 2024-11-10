@@ -16,14 +16,17 @@
     "@heroicons/react": "^2.1.5",
     "@tailwindcss/forms": "^0.5.9",
     "@vis.gl/react-google-maps": "^1.4.0",
+    "apexcharts": "^3.54.1",
     "axios": "^1.7.7",
-    "eslint-config-next": "^15.0.1",
-    "next": "^15.0.1",
+    "eslint-config-next": "^15.0.2",
+    "next": "^15.0.2",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.8.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-apexcharts": "^1.5.0",
+    "react-dom": "^18.3.1",
+    "react-papaparse": "^4.4.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
