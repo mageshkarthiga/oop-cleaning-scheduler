@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { readRemoteFile } from "react-papaparse";
+import ApexCharts from 'react-apexcharts';
 
 export default function HomePage() {
   const [yearlyData, setYearlyData] = useState([]);
@@ -27,7 +28,7 @@ export default function HomePage() {
   const parseCSVData = (data) => {
     let currentSection = '';
     let sectionData = [];
-    
+
     data.forEach((row, index) => {
       const rowValue = row[0]?.trim(); // Trim whitespace from row values
 
@@ -65,7 +66,7 @@ export default function HomePage() {
     const header = data[0];
     const yearlyDataRows = data.slice(1); // Ignore header row
     return yearlyDataRows
-      .filter(row => row[0]?.trim() !== "") // Filter out rows where 'Year' is empty
+      .filter(row => row[0]?.trim() !== "")
       .map((row) => ({
         Year: row[0],
         TotalNewClients: row[1],
@@ -84,7 +85,7 @@ export default function HomePage() {
 
   const parseYearlyWorkerHours = (data) => {
     return data.slice(1)
-      .filter(row => row[0]?.trim() !== "") // Filter out rows where 'Year' is empty
+      .filter(row => row[0]?.trim() !== "")
       .map((row) => ({
         Year: row[0],
         WorkerId: row[1],
@@ -95,7 +96,7 @@ export default function HomePage() {
 
   const parseMonthlyData = (data) => {
     return data.slice(1)
-      .filter(row => row[0]?.trim() !== "") // Filter out rows where 'Year' is empty
+      .filter(row => row[0]?.trim() !== "")
       .map((row) => ({
         Year: row[0],
         Month: row[1],
@@ -115,7 +116,7 @@ export default function HomePage() {
 
   const parseMonthlyWorkerHours = (data) => {
     return data.slice(1)
-      .filter(row => row[0]?.trim() !== "") // Filter out rows where 'Year' is empty
+      .filter(row => row[0]?.trim() !== "")
       .map((row) => ({
         Year: row[0],
         Month: row[1],
@@ -127,7 +128,7 @@ export default function HomePage() {
 
   const parseWeeklyWorkerHours = (data) => {
     return data.slice(1)
-      .filter(row => row[0]?.trim() !== "") // Filter out rows where 'Year' is empty
+      .filter(row => row[0]?.trim() !== "")
       .map((row) => ({
         Year: row[0],
         WeekStart: row[1],
@@ -138,29 +139,114 @@ export default function HomePage() {
       }));
   };
 
+  const chartOptions = {
+    chart: {
+      type: 'pie',
+    },
+    responsive: [{
+      breakpoint: 480,
+      options: {
+        chart: {
+          width: '100%',
+        },
+        legend: {
+          position: 'bottom',
+        },
+      },
+    }],
+  };
+
+  // Generate chart data for clients
+  const chartSeriesClients = (data) => [
+    parseInt(data.TotalNewClients),
+    parseInt(data.TotalExistingClients),
+    parseInt(data.TotalTerminatedClients),
+  ];
+
+  // Generate chart data for sessions
+  const chartSeriesSessions = (data) => [
+    parseInt(data.TotalFinishedSessions),
+    parseInt(data.TotalCancelledSessions),
+  ];
+
+  // Generate chart data for workers
+  const chartSeriesWorkers = (data) => [
+    parseInt(data.TotalNewWorkers),
+    parseInt(data.TotalExistingWorkers),
+    parseInt(data.TotalTerminatedWorkers),
+  ];
+
+  // Generate chart data for contracts
+  const chartSeriesContracts = (data) => [
+    parseInt(data.TotalNewContracts),
+    parseInt(data.TotalExistingOngoingContracts),
+    parseInt(data.TotalCompletedContracts),
+  ];
+
   return (
     <div>
-      <h1>Data Dashboard</h1>
+      <h1>Yearly Data Dashboard</h1>
+      <div>
+        <div className='flex flex-row space-x-5'>
+          {yearlyData.map((data, index) => (
+            <div key={index}>
+              <h3>{data.Year} - Clients</h3>
+              <ApexCharts
+                options={{
+                  ...chartOptions,
+                  labels: ['New Clients', 'Existing Clients', 'Terminated Clients'],
+                }}
+                series={chartSeriesClients(data)}
+                type="pie"
+              />
+            </div>
+          ))}
+          {yearlyData.map((data, index) => (
+            <div key={index}>
+              <h3>{data.Year} - Sessions</h3>
+              <ApexCharts
+                options={{
+                  ...chartOptions,
+                  labels: ['Finished Sessions', 'Cancelled Sessions'],
+                }}
+                series={chartSeriesSessions(data)}
+                type="pie"
+              />
+            </div>
+          ))}
+        </div>
 
-      {/* Display Yearly Data */}
-      <h2>Yearly Data</h2>
-      <pre>{JSON.stringify(yearlyData, null, 2)}</pre>
-
-      {/* Display Yearly Worker Hours */}
-      {/* <h2>Yearly Worker Hours</h2>
-      <pre>{JSON.stringify(yearlyWorkerHours, null, 2)}</pre> */}
-
-      {/* Display Monthly Data */}
-      {/* <h2>Monthly Data</h2>
-      <pre>{JSON.stringify(monthlyData, null, 2)}</pre> */}
-
-      {/* Display Monthly Worker Hours */}
-      {/* <h2>Monthly Worker Hours</h2>
-      <pre>{JSON.stringify(monthlyWorkerHours, null, 2)}</pre> */}
-
-      {/* Display Weekly Worker Hours */}
-      {/* <h2>Weekly Worker Hours</h2>
-      <pre>{JSON.stringify(weeklyWorkerHours, null, 2)}</pre> */}
+        <div className='flex flex-row space-x-5'>
+          {yearlyData.map((data, index) => (
+            <div key={index}>
+              <h3>{data.Year} - Workers</h3>
+              <ApexCharts
+                options={{
+                  ...chartOptions,
+                  labels: ['New Workers', 'Existing Workers', 'Terminated Workers'],
+                }}
+                series={chartSeriesWorkers(data)}
+                type="pie"
+              />
+            </div>
+          ))}
+          {yearlyData.map((data, index) => (
+            <div key={index}>
+              <h3>{data.Year} - Contracts</h3>
+              <ApexCharts
+                options={{
+                  ...chartOptions,
+                  labels: ['New Contracts', 'Ongoing Contracts', 'Completed Contracts'],
+                }}
+                series={chartSeriesContracts(data)}
+                type="pie"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
+
