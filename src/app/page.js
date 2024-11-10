@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { readRemoteFile } from "react-papaparse";
 import ApexCharts from 'react-apexcharts';
+import { TabView, TabPanel } from 'primereact/tabview';
+import { Card } from 'primereact/card';
 
 export default function HomePage() {
   const [yearlyData, setYearlyData] = useState([]);
@@ -147,7 +149,7 @@ export default function HomePage() {
       breakpoint: 480,
       options: {
         chart: {
-          width: '100%',
+          width: '80%',
         },
         legend: {
           position: 'bottom',
@@ -183,70 +185,246 @@ export default function HomePage() {
     parseInt(data.TotalCompletedContracts),
   ];
 
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const months = monthlyData.map(data => monthNames[data.Month - 1]);
+
+  // Separate data mappings for each report
+  const sessionCounts = monthlyData.map(data => ({
+    Finished: data.TotalFinishedSessions,
+    Cancelled: data.TotalCancelledSessions
+  }));
+
+  const contractCounts = monthlyData.map(data => ({
+    New: data.TotalNewContracts,
+    Ongoing: data.TotalExistingOngoingContracts,
+    Completed: data.TotalCompletedContracts
+  }));
+
+  const workerCounts = monthlyData.map(data => ({
+    New: data.TotalNewWorkers,
+    Existing: data.TotalExistingWorkers,
+    Terminated: data.TotalTerminatedWorkers
+  }));
+
+  const monthlyAreaChartOptions = {
+    chart: {
+      type: 'area',
+      stacked: true,
+    },
+    xaxis: {
+      categories: months,
+      title: { text: 'Month' },
+    },
+    yaxis: {
+      title: { text: 'Count' },
+    },
+    fill: {
+      opacity: 0.8,
+    },
+    colors: ['#33b2df', '#546E7A', '#d4526e'],
+    tooltip: {
+      shared: true,
+      intersect: false,
+    },
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+  const monthlyAreaChartSeries = [
+    {
+      name: "New Clients",
+      data: monthlyData.map(data => data.TotalNewClients),
+    },
+    {
+      name: "Existing Clients",
+      data: monthlyData.map(data => data.TotalExistingClients),
+    },
+    {
+      name: "Terminated Clients",
+      data: monthlyData.map(data => data.TotalTerminatedClients),
+    }
+  ];
+
+  // Chart options for sessions, contracts, and workers
+  const monthlySessionChartOptions = {
+    chart: {
+      type: 'area',
+      stacked: true,
+    },
+    xaxis: {
+      categories: months,
+      title: { text: 'Month' },
+    },
+    yaxis: {
+      title: { text: 'Session Count' },
+    },
+    colors: ['#33b2df', '#d4526e'],
+    series: [
+      { name: 'Finished Sessions', data: sessionCounts.map(count => count.Finished) },
+      { name: 'Cancelled Sessions', data: sessionCounts.map(count => count.Cancelled) },
+    ],
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+  const monthlyContractChartOptions = {
+    chart: {
+      type: 'area',
+      stacked: true,
+    },
+    xaxis: {
+      categories: months,
+      title: { text: 'Month' },
+    },
+    yaxis: {
+      title: { text: 'Contract Count' },
+    },
+    colors: ['#2196F3', '#9C27B0', '#673AB7'],
+    series: [
+      { name: 'New Contracts', data: contractCounts.map(count => count.New) },
+      { name: 'Ongoing Contracts', data: contractCounts.map(count => count.Ongoing) },
+      { name: 'Completed Contracts', data: contractCounts.map(count => count.Completed) },
+    ],
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+  const monthlyWorkerChartOptions = {
+    chart: {
+      type: 'area',
+      stacked: true,
+    },
+    xaxis: {
+      categories: months,
+      title: { text: 'Month' },
+    },
+    yaxis: {
+      title: { text: 'Worker Count' },
+    },
+    colors: ['#FF9800', '#8BC34A', '#F44336'],
+    series: [
+      { name: 'New Workers', data: workerCounts.map(count => count.New) },
+      { name: 'Existing Workers', data: workerCounts.map(count => count.Existing) },
+      { name: 'Terminated Workers', data: workerCounts.map(count => count.Terminated) },
+    ],
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+
   return (
     <div>
-      <h1>Yearly Data Dashboard</h1>
-      <div>
-        <div className='flex flex-row space-x-5'>
-          {yearlyData.map((data, index) => (
-            <div key={index}>
-              <h3>{data.Year} - Clients</h3>
-              <ApexCharts
-                options={{
-                  ...chartOptions,
-                  labels: ['New Clients', 'Existing Clients', 'Terminated Clients'],
-                }}
-                series={chartSeriesClients(data)}
-                type="pie"
-              />
+      <TabView>
+        <TabPanel header="Yearly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
+          <div className='container border-4 p-4 text-center'>
+            <div className='flex flex-row space-x-5 mb-5'>
+              <Card className='w-1/2'>
+                {yearlyData.map((data, index) => (
+                  <div key={index}>
+                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Clients</h3>
+                    <ApexCharts
+                      options={{
+                        ...chartOptions,
+                        labels: ['New Clients', 'Existing Clients', 'Terminated Clients'],
+                        colors: ['#33b2df', '#546E7A', '#d4526e'],
+                      }}
+                      series={chartSeriesClients(data)}
+                      type="pie"
+                    />
+                  </div>
+                ))}
+              </Card>
+              <Card className='w-1/2'>
+                {yearlyData.map((data, index) => (
+                  <div key={index}>
+                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Sessions</h3>
+                    <ApexCharts
+                      options={{
+                        ...chartOptions,
+                        labels: ['Finished Sessions', 'Cancelled Sessions'],
+                        colors: ['#5653FE', '#2983FF'],
+                      }}
+                      series={chartSeriesSessions(data)}
+                      type="pie"
+                    />
+                  </div>
+                ))}
+              </Card>
             </div>
-          ))}
-          {yearlyData.map((data, index) => (
-            <div key={index}>
-              <h3>{data.Year} - Sessions</h3>
-              <ApexCharts
-                options={{
-                  ...chartOptions,
-                  labels: ['Finished Sessions', 'Cancelled Sessions'],
-                }}
-                series={chartSeriesSessions(data)}
-                type="pie"
-              />
+            <div className='flex flex-row space-x-5'>
+              <Card className='w-1/2'>
+                {yearlyData.map((data, index) => (
+                  <div key={index}>
+                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Workers</h3>
+                    <ApexCharts
+                      options={{
+                        ...chartOptions,
+                        labels: ['New Workers', 'Existing Workers', 'Terminated Workers'],
+                        colors: ['#FF9800', '#8BC34A', '#F44336'],
+                      }}
+                      series={chartSeriesWorkers(data)}
+                      type="pie"
+                    />
+                  </div>
+                ))}
+              </Card>
+              <Card className='w-1/2'>
+                {yearlyData.map((data, index) => (
+                  <div key={index}>
+                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Contracts</h3>
+                    <ApexCharts
+                      options={{
+                        ...chartOptions,
+                        labels: ['New Contracts', 'Ongoing Contracts', 'Completed Contracts'],
+                        colors: ['#2196F3', '#9C27B0', '#673AB7'],
+                      }}
+                      series={chartSeriesContracts(data)}
+                      type="pie"
+                    />
+                  </div>
+                ))}
+              </Card>
             </div>
-          ))}
-        </div>
+          </div>
+        </TabPanel>
+        <TabPanel header="Monthly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
+          <div className='container border-4 p-4 text-center'>
+            <h3 className="font-bold tracking-tight text-gray-900">Client Trends</h3>
+            <ApexCharts
+              options={monthlyAreaChartOptions}
+              series={monthlyAreaChartSeries}
+              type="area"
+              height="350"
+            />
+            <h3 className="font-bold tracking-tight text-gray-900">Session Trends</h3>
+            <ApexCharts 
+            options={monthlySessionChartOptions} 
+            series={monthlySessionChartOptions.series} 
+            type="area" 
+            />
+            <h3 className="font-bold tracking-tight text-gray-900">Contract Trends</h3>
+            <ApexCharts 
+            options={monthlyContractChartOptions} 
+            series={monthlyContractChartOptions.series} 
+            type="area" 
+            />
+            <h3 className="font-bold tracking-tight text-gray-900">Worker Trends</h3>
+            <ApexCharts 
+            options={monthlyWorkerChartOptions} 
+            series={monthlyWorkerChartOptions.series} 
+            type="area" 
+            />
 
-        <div className='flex flex-row space-x-5'>
-          {yearlyData.map((data, index) => (
-            <div key={index}>
-              <h3>{data.Year} - Workers</h3>
-              <ApexCharts
-                options={{
-                  ...chartOptions,
-                  labels: ['New Workers', 'Existing Workers', 'Terminated Workers'],
-                }}
-                series={chartSeriesWorkers(data)}
-                type="pie"
-              />
-            </div>
-          ))}
-          {yearlyData.map((data, index) => (
-            <div key={index}>
-              <h3>{data.Year} - Contracts</h3>
-              <ApexCharts
-                options={{
-                  ...chartOptions,
-                  labels: ['New Contracts', 'Ongoing Contracts', 'Completed Contracts'],
-                }}
-                series={chartSeriesContracts(data)}
-                type="pie"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </TabPanel>
+        <TabPanel header="Weekly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200"></TabPanel>
+        {/* Repeat for Monthly and Weekly as needed */}
+      </TabView>
     </div>
   );
 }
-
-
