@@ -63,7 +63,7 @@ export default function SessionDetails() {
 
     const addWorkers = async (shiftId) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/v0.1/workers`);
+            const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
             setAvailableWorker(response.data);
         } catch (error) {
             console.error("Error getting workers:", error);
@@ -190,7 +190,7 @@ export default function SessionDetails() {
                     </p>
                 </div>
                 <br/>
-                <Button label="Update" severity='success'/>
+                <Button label="Update"/>
             </Card>
         </div>
     );
