@@ -1,25 +1,28 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { Button } from 'primereact/button';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import axios from 'axios';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
-
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await axios.get('http://localhost:8080/api/v0.1/shift/worker/2');
+                const response = await axios.get('http://localhost:8080/api/v0.1/cleaningSession');
                 const data = response.data;
-                console.log(data);
-                const formattedEvents = data.map(event => ({
-                    id: event.shiftId.toString(),
-                    title: 'Shift ' + event.shiftId,
-                    start:`${event.sessionStartDate}T${event.sessionStartTime}`,
-                    end:`${event.sessionEndDate}T${event.sessionEndTime}`,
-                    backgroundColor:"red",
-                    url: `/shift/${event.shiftId}`
+                const formattedEvents = data.map(cleaningSession => ({
+                    id: cleaningSession.cleaningSessionId.toString(),
+                    title: cleaningSession.sessionDescription,
+                    start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
+                    end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
+                    backgroundColor: cleaningSession.planningStage === "EMBER" 
+                        ? "orange" 
+                        : cleaningSession.planningStage === "GREEN" 
+                        ? "green" 
+                        : "red",
+                    url: `/session/${cleaningSession.cleaningSessionId}`
                 }));
                 setEvents(formattedEvents);
             } catch (error) {
@@ -31,7 +34,6 @@ export default function CalendarView() {
     }, []);
 
     return (
-        
         <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10 mb-4">Calendar</h1>
             <div className="container border-4 mx-auto p-4">
@@ -42,7 +44,7 @@ export default function CalendarView() {
                     headerToolbar={{
                         left: 'prev,next',
                         center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
                     }}
                     fixedWeekCount={false}
                 />
