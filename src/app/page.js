@@ -149,7 +149,7 @@ export default function HomePage() {
       breakpoint: 480,
       options: {
         chart: {
-          width: '80%',
+          width: '50%',
         },
         legend: {
           position: 'bottom',
@@ -230,6 +230,11 @@ export default function HomePage() {
     dataLabels: {
       enabled: false,
     },
+    options: {
+      chart: {
+        width: '80%',
+      },
+    }
   };
 
   const monthlyAreaChartSeries = [
@@ -260,7 +265,7 @@ export default function HomePage() {
     yaxis: {
       title: { text: 'Session Count' },
     },
-    colors: ['#33b2df', '#d4526e'],
+    colors: ['#5653FE', '#2983FF'],
     series: [
       { name: 'Finished Sessions', data: sessionCounts.map(count => count.Finished) },
       { name: 'Cancelled Sessions', data: sessionCounts.map(count => count.Cancelled) },
@@ -268,6 +273,11 @@ export default function HomePage() {
     dataLabels: {
       enabled: false,
     },
+    options: {
+      chart: {
+        width: '80%',
+      }
+    }
   };
 
   const monthlyContractChartOptions = {
@@ -291,6 +301,11 @@ export default function HomePage() {
     dataLabels: {
       enabled: false,
     },
+    options: {
+      chart: {
+        width: '80%',
+      }
+    }
   };
 
   const monthlyWorkerChartOptions = {
@@ -314,6 +329,11 @@ export default function HomePage() {
     dataLabels: {
       enabled: false,
     },
+    options: {
+      chart: {
+        width: '80%',
+      }
+    }
   };
 
 
@@ -394,32 +414,43 @@ export default function HomePage() {
         </TabPanel>
         <TabPanel header="Monthly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
           <div className='container border-4 p-4 text-center'>
-            <h3 className="font-bold tracking-tight text-gray-900">Client Trends</h3>
-            <ApexCharts
-              options={monthlyAreaChartOptions}
-              series={monthlyAreaChartSeries}
-              type="area"
-              height="350"
-            />
-            <h3 className="font-bold tracking-tight text-gray-900">Session Trends</h3>
-            <ApexCharts 
-            options={monthlySessionChartOptions} 
-            series={monthlySessionChartOptions.series} 
-            type="area" 
-            />
-            <h3 className="font-bold tracking-tight text-gray-900">Contract Trends</h3>
-            <ApexCharts 
-            options={monthlyContractChartOptions} 
-            series={monthlyContractChartOptions.series} 
-            type="area" 
-            />
-            <h3 className="font-bold tracking-tight text-gray-900">Worker Trends</h3>
-            <ApexCharts 
-            options={monthlyWorkerChartOptions} 
-            series={monthlyWorkerChartOptions.series} 
-            type="area" 
-            />
-
+            <div className='flex flex-row space-x-5 mb-5'>
+              <Card className='w-full'>
+                <h3 className="font-bold tracking-tight text-gray-900">Client Trends</h3>
+                <ApexCharts
+                  options={monthlyAreaChartOptions}
+                  series={monthlyAreaChartSeries}
+                  type="area"
+                  height="350"
+                />
+              </Card>
+              <Card className='w-full'>
+                <h3 className="font-bold tracking-tight text-gray-900">Session Trends</h3>
+                <ApexCharts
+                options={monthlySessionChartOptions}
+                series={monthlySessionChartOptions.series}
+                type="area"
+                />
+              </Card>
+            </div>
+            <div className='flex flex-row space-x-5'>
+              <Card className='w-full'>
+                <h3 className="font-bold tracking-tight text-gray-900">Contract Trends</h3>
+                <ApexCharts
+                options={monthlyContractChartOptions}
+                series={monthlyContractChartOptions.series}
+                type="area"
+                />
+              </Card>
+              <Card className='w-full'>
+                <h3 className="font-bold tracking-tight text-gray-900">Worker Trends</h3>
+                <ApexCharts
+                options={monthlyWorkerChartOptions}
+                series={monthlyWorkerChartOptions.series}
+                type="area"
+                />
+              </Card>
+            </div>
           </div>
         </TabPanel>
         <TabPanel header="Weekly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200"></TabPanel>
