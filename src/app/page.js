@@ -5,6 +5,7 @@ import { readRemoteFile } from "react-papaparse";
 import ApexCharts from 'react-apexcharts';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Card } from 'primereact/card';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 export default function HomePage() {
   const [yearlyData, setYearlyData] = useState([]);
@@ -12,15 +13,18 @@ export default function HomePage() {
   const [monthlyData, setMonthlyData] = useState([]);
   const [monthlyWorkerHours, setMonthlyWorkerHours] = useState([]);
   const [weeklyWorkerHours, setWeeklyWorkerHours] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadCSVData();
   }, []);
 
   const loadCSVData = () => {
+    setLoading(true);
     readRemoteFile("http://localhost:8080/api/v0.1/admins/download-statistics/2024", {
       complete: (result) => {
         parseCSVData(result.data);
+        setLoading(false);
       },
       download: true,
       header: false // Disable headers to handle multiple sections manually
@@ -338,124 +342,130 @@ export default function HomePage() {
 
 
   return (
-    <div>
-      <TabView>
-        <TabPanel header="Yearly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-          <div className='container border-4 p-4 text-center'>
-            <div className='flex flex-row space-x-5 mb-5'>
-              <Card className='w-1/2'>
-                {yearlyData.map((data, index) => (
-                  <div key={index}>
-                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Clients</h3>
-                    <ApexCharts
-                      options={{
-                        ...chartOptions,
-                        labels: ['New Clients', 'Existing Clients', 'Terminated Clients'],
-                        colors: ['#33b2df', '#546E7A', '#d4526e'],
-                      }}
-                      series={chartSeriesClients(data)}
-                      type="pie"
-                    />
-                  </div>
-                ))}
-              </Card>
-              <Card className='w-1/2'>
-                {yearlyData.map((data, index) => (
-                  <div key={index}>
-                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Sessions</h3>
-                    <ApexCharts
-                      options={{
-                        ...chartOptions,
-                        labels: ['Finished Sessions', 'Cancelled Sessions'],
-                        colors: ['#5653FE', '#2983FF'],
-                      }}
-                      series={chartSeriesSessions(data)}
-                      type="pie"
-                    />
-                  </div>
-                ))}
-              </Card>
+    <div className='mx-10'>
+      <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">Admin Dashboard</h1>
+      <Button label='Download Stats' icon="pi pi-file-excel" iconPos='right' severity='info' onClick={() =>  window.open('http://localhost:8080/api/v0.1/admins/download-statistics/2024')}/>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <ProgressSpinner />
+        </div>
+      ) : (
+        <TabView>
+          <TabPanel header="Yearly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
+            <div className='container border-4 p-4 text-center'>
+              <div className='flex flex-row space-x-5 mb-5'>
+                <Card className='w-1/2'>
+                  {yearlyData.map((data, index) => (
+                    <div key={index}>
+                      <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Clients</h3>
+                      <ApexCharts
+                        options={{
+                          ...chartOptions,
+                          labels: ['New Clients', 'Existing Clients', 'Terminated Clients'],
+                          colors: ['#33b2df', '#546E7A', '#d4526e'],
+                        }}
+                        series={chartSeriesClients(data)}
+                        type="pie"
+                      />
+                    </div>
+                  ))}
+                </Card>
+                <Card className='w-1/2'>
+                  {yearlyData.map((data, index) => (
+                    <div key={index}>
+                      <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Sessions</h3>
+                      <ApexCharts
+                        options={{
+                          ...chartOptions,
+                          labels: ['Finished Sessions', 'Cancelled Sessions'],
+                          colors: ['#5653FE', '#2983FF'],
+                        }}
+                        series={chartSeriesSessions(data)}
+                        type="pie"
+                      />
+                    </div>
+                  ))}
+                </Card>
+              </div>
+              <div className='flex flex-row space-x-5'>
+                <Card className='w-1/2'>
+                  {yearlyData.map((data, index) => (
+                    <div key={index}>
+                      <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Workers</h3>
+                      <ApexCharts
+                        options={{
+                          ...chartOptions,
+                          labels: ['New Workers', 'Existing Workers', 'Terminated Workers'],
+                          colors: ['#FF9800', '#8BC34A', '#F44336'],
+                        }}
+                        series={chartSeriesWorkers(data)}
+                        type="pie"
+                      />
+                    </div>
+                  ))}
+                </Card>
+                <Card className='w-1/2'>
+                  {yearlyData.map((data, index) => (
+                    <div key={index}>
+                      <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Contracts</h3>
+                      <ApexCharts
+                        options={{
+                          ...chartOptions,
+                          labels: ['New Contracts', 'Ongoing Contracts', 'Completed Contracts'],
+                          colors: ['#2196F3', '#9C27B0', '#673AB7'],
+                        }}
+                        series={chartSeriesContracts(data)}
+                        type="pie"
+                      />
+                    </div>
+                  ))}
+                </Card>
+              </div>
             </div>
-            <div className='flex flex-row space-x-5'>
-              <Card className='w-1/2'>
-                {yearlyData.map((data, index) => (
-                  <div key={index}>
-                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Workers</h3>
-                    <ApexCharts
-                      options={{
-                        ...chartOptions,
-                        labels: ['New Workers', 'Existing Workers', 'Terminated Workers'],
-                        colors: ['#FF9800', '#8BC34A', '#F44336'],
-                      }}
-                      series={chartSeriesWorkers(data)}
-                      type="pie"
-                    />
-                  </div>
-                ))}
-              </Card>
-              <Card className='w-1/2'>
-                {yearlyData.map((data, index) => (
-                  <div key={index}>
-                    <h3 className="font-bold tracking-tight text-gray-900">{data.Year} - Contracts</h3>
-                    <ApexCharts
-                      options={{
-                        ...chartOptions,
-                        labels: ['New Contracts', 'Ongoing Contracts', 'Completed Contracts'],
-                        colors: ['#2196F3', '#9C27B0', '#673AB7'],
-                      }}
-                      series={chartSeriesContracts(data)}
-                      type="pie"
-                    />
-                  </div>
-                ))}
-              </Card>
-            </div>
-          </div>
-        </TabPanel>
-        <TabPanel header="Monthly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-          <div className='container border-4 p-4 text-center'>
-            <div className='flex flex-row space-x-5 mb-5'>
-              <Card className='w-full'>
-                <h3 className="font-bold tracking-tight text-gray-900">Client Trends</h3>
-                <ApexCharts
-                  options={monthlyAreaChartOptions}
-                  series={monthlyAreaChartSeries}
+          </TabPanel>
+          <TabPanel header="Monthly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
+            <div className='container border-4 p-4 text-center'>
+              <div className='flex flex-row space-x-5 mb-5'>
+                <Card className='w-full'>
+                  <h3 className="font-bold tracking-tight text-gray-900">Client Trends</h3>
+                  <ApexCharts
+                    options={monthlyAreaChartOptions}
+                    series={monthlyAreaChartSeries}
+                    type="area"
+                    height="350"
+                  />
+                </Card>
+                <Card className='w-full'>
+                  <h3 className="font-bold tracking-tight text-gray-900">Session Trends</h3>
+                  <ApexCharts
+                  options={monthlySessionChartOptions}
+                  series={monthlySessionChartOptions.series}
                   type="area"
-                  height="350"
-                />
-              </Card>
-              <Card className='w-full'>
-                <h3 className="font-bold tracking-tight text-gray-900">Session Trends</h3>
-                <ApexCharts
-                options={monthlySessionChartOptions}
-                series={monthlySessionChartOptions.series}
-                type="area"
-                />
-              </Card>
+                  />
+                </Card>
+              </div>
+              <div className='flex flex-row space-x-5'>
+                <Card className='w-full'>
+                  <h3 className="font-bold tracking-tight text-gray-900">Contract Trends</h3>
+                  <ApexCharts
+                  options={monthlyContractChartOptions}
+                  series={monthlyContractChartOptions.series}
+                  type="area"
+                  />
+                </Card>
+                <Card className='w-full'>
+                  <h3 className="font-bold tracking-tight text-gray-900">Worker Trends</h3>
+                  <ApexCharts
+                  options={monthlyWorkerChartOptions}
+                  series={monthlyWorkerChartOptions.series}
+                  type="area"
+                  />
+                </Card>
+              </div>
             </div>
-            <div className='flex flex-row space-x-5'>
-              <Card className='w-full'>
-                <h3 className="font-bold tracking-tight text-gray-900">Contract Trends</h3>
-                <ApexCharts
-                options={monthlyContractChartOptions}
-                series={monthlyContractChartOptions.series}
-                type="area"
-                />
-              </Card>
-              <Card className='w-full'>
-                <h3 className="font-bold tracking-tight text-gray-900">Worker Trends</h3>
-                <ApexCharts
-                options={monthlyWorkerChartOptions}
-                series={monthlyWorkerChartOptions.series}
-                type="area"
-                />
-              </Card>
-            </div>
-          </div>
-        </TabPanel>
-        <TabPanel header="Weekly" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200"></TabPanel>
-        {/* Repeat for Monthly and Weekly as needed */}
-      </TabView>
+          </TabPanel>
+        </TabView>
+      )}
     </div>
   );
 }
