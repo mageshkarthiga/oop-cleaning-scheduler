@@ -26,7 +26,6 @@ export default function SessionDetails() {
             .then((response) => {
                 const fetchedData = response.data;
                 const foundSession = fetchedData.find(cleaningSession => cleaningSession.cleaningSessionId.toString() === id);
-                foundSession.planningStage = "EMBER";
                 console.log(foundSession);
 
                 if (!foundSession) {
@@ -63,15 +62,15 @@ export default function SessionDetails() {
 
     const addWorkers = async (shiftId) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
-            setAvailableWorker(response.data);
+            // const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
+            // setAvailableWorker(response.data);
         } catch (error) {
             console.error("Error getting workers:", error);
             setError('Failed to retrieve workers. Please try again later.');
         }
     };
 
-    if (loading) return <ProgressSpinner />;
+    if (loading) return <ProgressSpinner className='m-auto'/>;
     if (error) return <div>Error: {error}</div>;
     if (!session) return <div>No data found for ID {id}</div>;
 
@@ -114,22 +113,38 @@ export default function SessionDetails() {
         }
     }
 
-    const handleRowSelect = (shiftId) => {
+    const handleViewSelect = (shiftId) => {
         if (typeof window !== "undefined") {
             router.push(`/shift/${shiftId}`);
         }
     };
 
-    const actionBodyTemplate = (rowData) => {
+    const handleUnassignSelect = (shiftId) => {
+
+    }
+
+    const viewButtonTemplate = (rowData) => {
         return (
             <Button 
                 label="View" 
                 severity="help" 
                 outlined
-                onClick={() => handleRowSelect(rowData.shiftId)} 
+                onClick={() => handleViewSelect(rowData.shiftId)} 
             />
+            
         );
     };
+
+    const unassignButtonTemplate = (rowData) => {
+        return (
+            <Button 
+                label="Unassign" 
+                severity="danger" 
+                outlined
+                onClick={() => handleUnassignSelect(rowData.shiftId)} 
+            />
+        );
+    }
 
     return (
         <div className='container m-auto p-5'>
@@ -156,7 +171,8 @@ export default function SessionDetails() {
                         <DataTable value={workers} size='small'>
                             <Column field="name" header="Name" style={{ color: "black", backgroundColor: "white" }} />
                             <Column field="phone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
-                            <Column body={actionBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                            <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                            <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                         </DataTable>
                     </div>
                     <br />

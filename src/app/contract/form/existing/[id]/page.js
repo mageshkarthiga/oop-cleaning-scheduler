@@ -33,9 +33,6 @@ export default function ContractDetails() {
             const response = await axios.get(`http://localhost:8080/api/v0.1/contract`);
             const contractData = response.data;
 
-            console.log("Fetched contract data from API:", contractData);
-            console.log("Fetched ID from useParams:", id);
-
             const numericId = Number(id);
             const foundContract = contractData.find((contract) => contract.contractId === numericId);
 
@@ -213,13 +210,17 @@ export default function ContractDetails() {
                 </div>
                 <div className='w-3/4'>
                     <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Cleaning Sessions</h2>
-                    <DataTable value={cleaningSessions} sortField='sessionStartDate' paginator rows={5} loading={loading}>
-                        <Column field="sessionStartDate" header="Session Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "sessionStartDate")} sortable/>
-                        <Column field="sessionStartTime" header="Start Time" style={{ color: "black", backgroundColor: "white" }} />
-                        <Column field="sessionEndTime" header="End Time" style={{ color: "black", backgroundColor: "white" }} />
-                        <Column field="planningStage" header="Planning Status" style={{ color: "black", backgroundColor: "white" }} body={stageTagTemplate} />
-                        <Column body={actionBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                    </DataTable>
+                    {cleaningSessions.length > 0 ? (
+                        <DataTable value={cleaningSessions} sortField='sessionStartDate' paginator rows={5} loading={loading}>
+                            <Column field="sessionStartDate" header="Session Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "sessionStartDate")} sortable />
+                            <Column field="sessionStartTime" header="Start Time" style={{ color: "black", backgroundColor: "white" }} />
+                            <Column field="sessionEndTime" header="End Time" style={{ color: "black", backgroundColor: "white" }} />
+                            <Column field="planningStage" header="Planning Status" style={{ color: "black", backgroundColor: "white" }} body={stageTagTemplate} />
+                            <Column body={actionBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                        </DataTable>
+                    ) : (
+                        <p>No cleaning sessions available.</p>
+                    )}
                 </div>
             </div>
         </Card>

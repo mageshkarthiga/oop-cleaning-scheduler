@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -56,11 +56,11 @@ export default function WorkerShifts() {
 
     const actionBodyTemplate = (rowData) => {
         return (
-            <Button 
-                label="View" 
-                severity="help" 
+            <Button
+                label="View"
+                severity="help"
                 outlined
-                onClick={() => handleRowSelect(rowData.contractId)} 
+                onClick={() => handleRowSelect(rowData.contractId)}
             />
         );
     };
@@ -79,12 +79,12 @@ export default function WorkerShifts() {
     return (
         <div className="container mx-auto p-4 card border-4">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Contracts</h2>
-            <DataTable value={shifts} sortField='contractStart' paginator rows={5} loading={loading}>
-                <Column field="client.name" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}/>
-                <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable/>
-                <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")}/>
-                <Column field="frequency" header="Frequency" style={{ color: "black", backgroundColor: "white" }}/>
-                <Column field="contractStatus" header="Status" style={{ color: "black", backgroundColor: "white" }} body={tagTemplate}/>
+            <DataTable value={shifts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
+                <Column field="client.name" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} />
+                <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />
+                <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")} />
+                <Column field="frequency" header="Frequency" style={{ color: "black", backgroundColor: "white" }} />
+                <Column field="contractStatus" header="Status" style={{ color: "black", backgroundColor: "white" }} body={tagTemplate} />
                 <Column body={actionBodyTemplate} style={{ color: "black", backgroundColor: "white" }} />
             </DataTable>
         </div>
