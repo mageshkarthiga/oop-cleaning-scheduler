@@ -12,15 +12,12 @@ export default function CreateContractForm() {
     const [endDate, setEndDate] = useState('');
     const [startTime, setStartTime] = useState('');
     const [error, setError] = useState('');
-    const [clientsWithProperties, setClientsWithProperties] = useState([]);
-    const [filteredProperties, setFilteredProperties] = useState([]);
     const [roomOptions, setRoomOptions] = useState([]);
     const [frequency] = useState(['Weekly', 'Bi-Weekly']);
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
         CONDOMINIUM: ['2 Bedrooms and Below', '3 Bedrooms']
     };
-
 
     const today = new Date();
     const minDate = today.toISOString().split('T')[0];
@@ -37,7 +34,7 @@ export default function CreateContractForm() {
         script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
         script.async = true;
         script.onload = () => {
-            console.log('Google Maps API loaded');
+            initializeAutocomplete();
         };
         script.onerror = () => {
             console.error('Failed to load Google Maps API');
@@ -68,26 +65,15 @@ export default function CreateContractForm() {
                     }
                 }
             });
+        } else {
+            // Retry initialization if google.maps is not yet available
+            setTimeout(initializeAutocomplete, 500);
         }
     };
 
     useEffect(() => {
         loadGoogleMapsAPI();
     }, []);
-
-    useEffect(() => {
-        // Wait for Google Maps API to load and then initialize Autocomplete
-        if (window.google && window.google.maps) {
-            initializeAutocomplete();
-        } else {
-            const interval = setInterval(() => {
-                if (window.google && window.google.maps) {
-                    clearInterval(interval);
-                    initializeAutocomplete();
-                }
-            }, 100);
-        }
-    }, [window.google]);
 
     const handleClientChange = (e) => {
         const clientId = e.target.value;

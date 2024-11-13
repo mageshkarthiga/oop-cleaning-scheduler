@@ -9,7 +9,7 @@ import { Tag } from 'primereact/tag';
 import { SplitButton } from 'primereact/splitbutton';
 import { Toast } from 'primereact/toast';
 
-const fetchShifts = async () => {
+const fetchContracts = async () => {
     try {
         const response = await axios.get('http://localhost:8080/api/v0.1/contract');
         console.log(response.data)
@@ -20,16 +20,16 @@ const fetchShifts = async () => {
     }
 };
 
-export default function WorkerShifts() {
-    const [shifts, setShifts] = useState([]);
+export default function WorkerContracts() {
+    const [contracts, setContracts] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const toast = useRef(null); // Create a ref for the Toast component
+    const toast = useRef(null); 
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await fetchShifts();
-            setShifts(data);
+            const data = await fetchContracts();
+            setContracts(data);
             setLoading(false);
         };
 
@@ -56,32 +56,6 @@ export default function WorkerShifts() {
         }
     };
 
-    const terminateContract = async (contractId) => {
-        try {
-            await axios.delete(`http://localhost:8080/api/v0.1/contract/deactivate-contract/${contractId}`);
-            const updatedShifts = shifts.filter((shift) => shift.contractId !== contractId);
-            setShifts(updatedShifts);
-
-            // Show success toast
-            toast.current.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Contract terminated successfully.',
-                life: 3000
-            });
-        } catch (error) {
-            console.error("Error terminating contract", error);
-            
-            // Show error toast
-            toast.current.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.response ? error.response.data : 'An unexpected error occurred.',
-                life: 3000
-            });
-        }
-    };
-
     const viewButtonTemplate = (rowData) => {
         return (
             <Button
@@ -91,17 +65,6 @@ export default function WorkerShifts() {
                 onClick={() => handleRowSelect(rowData.contractId)}
             />
         );
-    };
-
-    const deactivateButtonTemplate = (rowData) => {
-        return (
-            <Button
-                label="Terminate"
-                severity="danger"
-                outlined
-                onClick={() => terminateContract(rowData.contractId)}
-            />
-        )
     };
 
     const tagTemplate = (rowData) => {
@@ -136,14 +99,13 @@ export default function WorkerShifts() {
                 dropdownIcon="pi pi-chevron-down"
             />
             <br /><br />
-            <DataTable value={shifts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
+            <DataTable value={contracts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
                 <Column field="client.name" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} />
                 <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />
                 <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")} />
                 <Column field="frequency" header="Frequency" style={{ color: "black", backgroundColor: "white" }} />
                 <Column field="contractStatus" header="Status" style={{ color: "black", backgroundColor: "white" }} body={tagTemplate} />
                 <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                <Column body={deactivateButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
             </DataTable>
 
             {/* Toast component for displaying alerts */}

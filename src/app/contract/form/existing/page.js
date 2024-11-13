@@ -16,10 +16,7 @@ export default function CreateContractForm() {
     const [clientsWithProperties, setClientsWithProperties] = useState([]);
     const [filteredProperties, setFilteredProperties] = useState([]);
     const [roomOptions, setRoomOptions] = useState([]);
-    const [frequency] = useState([
-        'Weekly',
-        'Bi-Weekly'
-    ]);
+    const [frequency] = useState(['Weekly', 'Bi-Weekly']);
 
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
@@ -34,7 +31,8 @@ export default function CreateContractForm() {
     // Fetch clients and their properties
     const fetchClientsWithProperties = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/v0.1/client/get-clients-with-client-sites/');
+            const response = await axios.get('http://localhost:8080/api/v0.1/client/get-clients-with-client-sites');
+            console.log('Response:', response.data);
             setClientsWithProperties(response.data);
         } catch (error) {
             console.error('Error fetching clients and properties:', error);
@@ -52,13 +50,9 @@ export default function CreateContractForm() {
 
         // Filter properties based on the selected client ID and format the property details
         const clientProperties = clientsWithProperties
-            .find(client => client.clientId === parseInt(clientId))?.listOfClientSiteDto || [];
+            .find(client => client.clientId === parseInt(clientId))?.clientSites || [];
 
-        const formattedProperties = clientProperties.map(property =>
-            `${property.streetAddress}, ${property.unitNumber}, ${property.postalCode}`
-        );
-
-        setFilteredProperties(formattedProperties);
+        setFilteredProperties(clientProperties);
     };
 
     const handlePropertyTypeChange = (e) => {
@@ -84,7 +78,15 @@ export default function CreateContractForm() {
         }
 
         // Prepare data for submission
-        const formData = {};
+        const formData = {
+            client: selectedClient,
+            package: selectedPackage,
+            property: selectedProperty,
+            frequency: selectedFrequency,
+            startDate,
+            endDate,
+            startTime,
+        };
 
         try {
             // const response = await axios.post('https://yourapi.com/leaves', formData);
@@ -119,7 +121,7 @@ export default function CreateContractForm() {
                                 <option value="" disabled>Select Client</option>
                                 {clientsWithProperties.map((client) => (
                                     <option key={client.clientId} value={client.clientId}>
-                                        {client.name}
+                                        {client.clientName}
                                     </option>
                                 ))}
                             </select>
@@ -138,8 +140,8 @@ export default function CreateContractForm() {
                             >
                                 <option value="" disabled>Select Existing Property</option>
                                 {filteredProperties.map((property, index) => (
-                                    <option key={index} value={property}>
-                                        {property}
+                                    <option key={index} value={property.streetAddress}>
+                                        {`${property.streetAddress}, ${property.postalCode}`}
                                     </option>
                                 ))}
                             </select>

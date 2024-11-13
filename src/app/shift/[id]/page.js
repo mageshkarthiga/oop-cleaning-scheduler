@@ -123,8 +123,9 @@ export default function DetailsPage() {
             return;
         }
         try {
-            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/start-shift/${id}`, updatedShift);
-            if (response.status === 200) {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/start-shift/${id}`);
+            console.log(response);
+            if (response.status === 202 && response.data.success) {
                 console.log('Session started successfully', response);
                 setIsSessionStarted(true);
                 setSelectedImage(null);
@@ -144,8 +145,8 @@ export default function DetailsPage() {
             return;
         }
         try {
-            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/update-shift/${id}`);
-            if (response.status === 200) {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/end-shift/${id}`);
+            if (response.status === 202 && response.data.success) {
                 console.log('Session ended successfully', response);
                 setIsSessionStarted(false);
                 setIsSessionFinished(true);

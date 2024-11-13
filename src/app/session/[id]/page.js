@@ -9,6 +9,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
+import { Dialog } from 'primereact/dialog';
 
 export default function SessionDetails() {
     const { id } = useParams();
@@ -16,19 +17,23 @@ export default function SessionDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [workers, setWorkers] = useState([]);
-    const [selectedWorker, setSelectedWorker] = useState([]);
+    const [selectedWorker, setSelectedWorker] = useState('');
     const [availableWorker, setAvailableWorker] = useState([]);
     const [needWorkers, setNeedWorkers] = useState(false);
     const [startDate, setStartDate] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endDate, setEndDate] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [showAvailableWorkers, setShowAvailableWorkers] = useState(false);
+    const [unassignedShiftId, setUnassignedShiftId] = useState(null);
     const router = useRouter();
     const toast = useRef(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`)
-            .then((response) => {
+        const fetchSessionData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`);
                 const foundSession = response.data;
                 console.log(foundSession);
 
@@ -63,12 +68,14 @@ export default function SessionDetails() {
                 setEndTime(foundSession.sessionEndTime);
 
                 setLoading(false);
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error("Error fetching details:", error);
                 setError('Failed to load session details. Please try again later.');
                 setLoading(false);
-            });
+            }
+        };
+
+        fetchSessionData();
     }, [id]);
 
     const getAdditionalWorkers = async (shiftId) => {
@@ -142,7 +149,6 @@ export default function SessionDetails() {
                 outlined
                 onClick={() => handleViewSelect(rowData.shiftId)}
             />
-
         );
     };
 
@@ -152,7 +158,11 @@ export default function SessionDetails() {
                 label="Unassign"
                 severity="danger"
                 outlined
-                onClick={() => handleWorkerUnassign(rowData.shiftId)}
+                onClick={() => {
+                    handleWorkerUnassign(rowData.shiftId);
+                    setShowAvailableWorkers(true);
+                    setUnassignedShiftId(rowData.shiftId);
+                }}
             />
         );
     }
@@ -160,12 +170,31 @@ export default function SessionDetails() {
     const handleWorkerUnassign = async (shiftId) => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
-            if (response.code == 200) {
+            console.log(response);
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 3000 });
+                const updatedWorkers = workers.filter(worker => worker.shiftId !== shiftId);
+                setWorkers(updatedWorkers);
             }
         }
         catch (error) {
             toast.current.show({ severity: 'error', summary: 'Unassign Failed', detail: 'Failed to unassign worker. Please try again.', life: 3000 });
+        }
+    };
+
+    const reassignWorker = async () => {
+        try {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/assign-worker/${unassignedShiftId}`, {
+                workerId: selectedWorker
+            });
+            if (response.status === 200) {
+                toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 3000 });
+                setShowAvailableWorkers(false);
+                const updatedWorkers = [...workers, { workerName: response.data.workerName, workerPhone: response.data.workerPhone, shiftId: unassignedShiftId }];
+                setWorkers(updatedWorkers);
+            }
+        } catch (error) {
+            toast.current.show({ severity: 'error', summary: 'Reassign Failed', detail: 'Failed to reassign worker. Please try again.', life: 3000 });
         }
     };
 
@@ -206,9 +235,13 @@ export default function SessionDetails() {
         }
     };
 
+    const showDialog = () => {
+        setDialogVisible(true);
+    };
 
     return (
         <div className="container m-auto p-4">
+            <Toast ref={toast} />
             <Card title={`Details for Session ${id}`} className="m-5 p-4 shadow-lg rounded-lg">
                 <div className="flex">
                     {/* Column for session details */}
@@ -263,7 +296,7 @@ export default function SessionDetails() {
                         </p>
                         <div className='flex flex-row space-x-4'>
                             <Button label="Update Session" className="mt-5" onClick={() => updateSession()} />
-                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()} />
+                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => showDialog()} />
                         </div>
                     </div>
 
@@ -276,7 +309,11 @@ export default function SessionDetails() {
                         {workers.length > 0 ? (
                             <DataTable value={workers} size="small" className="w-full mt-2">
                                 <Column field="workerName" header="Name" style={{ color: "black", backgroundColor: "white" }} />
-                                <Column field="workerPhone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
+                                <Column field="workerPhone" header="Phone Number" body={(rowData) => (
+                                    <a href={`tel:${rowData.workerPhone}`} className="underline text-blue-400">
+                                        {rowData.workerPhone}
+                                    </a>
+                                )} style={{ color: "black", backgroundColor: "white" }} />
                                 <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                                 <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                             </DataTable>
@@ -284,23 +321,40 @@ export default function SessionDetails() {
                             <p>No workers assigned to this shift.</p>
                         )}
 
-                        <p className="font-semibold mt-4">Available Workers:</p>
-                        {needWorkers && (
-                            <select
-                                value={availableWorker}
-                                onChange={(e) => setSelectedWorker([...e.target.selectedOptions].map(option => option.value))}
-                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mt-2"
-                                multiple
-                            >
-                                {workers.map((worker, index) => (
-                                    <option key={index} value={worker.id}>
-                                        {worker.name}
-                                    </option>
-                                ))}
-                            </select>
+                        {showAvailableWorkers && (
+                            <>
+                                <p className="font-semibold mt-4">Available Workers:</p>
+                                <select
+                                    value={selectedWorker}
+                                    onChange={(e) => setSelectedWorker(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mb-4"
+                                >
+                                    <option value="" disabled>Select a worker</option>
+                                    {availableWorker.map((worker, index) => (
+                                        <option key={index} value={worker.id}>
+                                            {worker.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <Button label="Reassign Worker" className="mt-2" onClick={reassignWorker} />
+                            </>
                         )}
                     </div>
                 </div>
+                <Dialog
+                    header="Confirm Cancellation"
+                    visible={dialogVisible}
+                    style={{ width: '50vw' }}
+                    onHide={() => setDialogVisible(false)}
+                    footer={
+                        <div className='flex flex-row space-x-4'>
+                            <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
+                            <Button label="Cancel &nbsp;" icon="pi pi-check" onClick={cancelSession} severity='danger' iconPos='right' outlined />
+                        </div>
+                    }
+                >
+                    <p>Are you sure you want to cancel this session?</p>
+                </Dialog>
             </Card>
         </div>
     );

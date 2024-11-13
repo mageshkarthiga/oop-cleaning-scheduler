@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
+import { Dialog } from 'primereact/dialog';
 
 export default function ContractDetails() {
     const [contract, setContract] = useState(null);
@@ -18,6 +19,7 @@ export default function ContractDetails() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [startTime, setStartTime] = useState('');
+    const [dialogVisible, setDialogVisible] = useState(false);
     const { id } = useParams();
     const router = useRouter();
 
@@ -25,45 +27,33 @@ export default function ContractDetails() {
     const minDate = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
-        if (id) fetchContractData();
+        const fetchContractData = async () => {
+            try {
+                if (id && loading) {
+                    const response = await axios.get(`http://localhost:8080/api/v0.1/contract/${id}`);
+                    const contractData = response.data;
+
+                    if (contractData) {
+                        setContract(contractData);
+                        setCleaningSessions(contractData.cleaningSessions || []);
+                        setStartDate(contractData.contractStart || "");
+                        setEndDate(contractData.contractEnd || "");
+                        setStartTime(contractData.sessionStartTime || "");
+                        setLoading(false); 
+                    } else {
+                        setError("Contract not found.");
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching contract data:", error);
+                setError("Failed to load contract data.");
+            }
+        };
+
+        fetchContractData();
     }, [id]);
 
-    const fetchContractData = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/v0.1/contract`);
-            const contractData = response.data;
 
-            const numericId = Number(id);
-            const foundContract = contractData.find((contract) => contract.contractId === numericId);
-
-            if (foundContract) {
-                setContract(foundContract);
-                setCleaningSessions(foundContract.cleaningSessions || []);
-
-                if (foundContract.contractStart) {
-                    const start = new Date(foundContract.contractStart);
-                    if (!isNaN(start)) {
-                        setStartDate(start.toISOString().split('T')[0]);
-                        setStartTime(start.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }));
-                    }
-                }
-
-                if (foundContract.contractEnd) {
-                    const end = new Date(foundContract.contractEnd);
-                    if (!isNaN(end)) {
-                        setEndDate(end.toISOString().split('T')[0]);
-                    }
-                }
-
-                setLoading(false);
-            } else {
-                setError('Contract not found.');
-            }
-        } catch (error) {
-            console.error('Error fetching contract data:', error);
-            setError('Failed to load contract data. Please try again later.');
-        }
-    };
 
     const updateContractDetails = async () => {
         try {
@@ -132,7 +122,6 @@ export default function ContractDetails() {
     };
 
     const stageTagTemplate = (rowData) => {
-        rowData.planningStage = "EMBER";
         switch (rowData.planningStage) {
             case "GREEN":
                 return <Tag value="Confirmed" severity="success" />;
@@ -142,6 +131,34 @@ export default function ContractDetails() {
                 return <Tag value="Vacant" severity="danger" />;
         }
     }
+
+    const terminateContract = async () => {
+        try {
+            await axios.put(`http://localhost:8080/api/v0.1/contract/deactivate-contract/${id}`);
+
+            // Show success toast
+            toast.current.show({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Contract terminated successfully.',
+                life: 3000
+            });
+        } catch (error) {
+            console.error("Error terminating contract", error);
+
+            // Show error toast
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.response ? error.response.data : 'An unexpected error occurred.',
+                life: 3000
+            });
+        }
+    };
+
+    const showDialog = () => {
+        setDialogVisible(true);
+    };
 
     if (error) {
         return (
@@ -203,7 +220,10 @@ export default function ContractDetails() {
                             />
                         </div>
                     </div>
-                    <Button label="Update" className="mt-4" onClick={updateContractDetails} />
+                    <div className='flex flex-row space-x-4'>
+                        <Button label="Update Contract" className="mt-4" onClick={updateContractDetails} />
+                        <Button label="Terminate Contract" className="mt-4" onClick={showDialog} severity="danger" outlined />
+                    </div>
                 </div>
 
                 {/* Divider */}
@@ -224,6 +244,21 @@ export default function ContractDetails() {
                     )}
                 </div>
             </div>
+            {/* Confirmation Dialog */}
+            <Dialog
+                header="Confirm Termination"
+                visible={dialogVisible}
+                style={{ width: '50vw' }}
+                onHide={() => setDialogVisible(false)}
+                footer={
+                    <div className='flex flex-row space-x-4'>
+                        <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
+                        <Button label="Terminate &nbsp;" icon="pi pi-check" onClick={terminateContract} severity='danger' iconPos='right' outlined />
+                    </div>
+                }
+            >
+                <p>Are you sure you want to terminate this contract?</p>
+            </Dialog>
         </Card>
     );
 }
