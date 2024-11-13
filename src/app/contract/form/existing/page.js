@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import axios from 'axios';
 
@@ -12,64 +12,24 @@ export default function CreateContractForm() {
     const [endDate, setEndDate] = useState('');
     const [startTime, setStartTime] = useState('');
     const [error, setError] = useState('');
+
     const [clientsWithProperties, setClientsWithProperties] = useState([]);
     const [filteredProperties, setFilteredProperties] = useState([]);
     const [roomOptions, setRoomOptions] = useState([]);
-    const [frequency] = useState(['Weekly', 'Bi-Weekly']);
+    const [frequency] = useState([
+        'Weekly',
+        'Bi-Weekly'
+    ]);
+
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
         CONDOMINIUM: ['2 Bedrooms and Below', '3 Bedrooms']
     };
 
-
     const today = new Date();
     const minDate = today.toISOString().split('T')[0];
     today.setHours(today.getHours());
     const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
-
-    const [place, setPlace] = useState(null);
-    const addressInputRef = useRef(null);
-    const [postalCode, setPostalCode] = useState('');
-
-    // Load the Google Maps API script dynamically
-    const loadGoogleMapsAPI = () => {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-        script.async = true;
-        script.onload = () => {
-            console.log('Google Maps API loaded');
-        };
-        script.onerror = () => {
-            console.error('Failed to load Google Maps API');
-            setError('Failed to load Google Maps API. Please try again later.');
-        };
-        document.head.appendChild(script);
-    };
-
-    // Initialize Google Maps and Autocomplete
-    const initializeAutocomplete = () => {
-        if (window.google && window.google.maps) {
-            const googleMaps = window.google.maps;
-            const autocomplete = new googleMaps.places.Autocomplete(addressInputRef.current, {
-                types: ['geocode'],
-                componentRestrictions: { country: 'SG' }
-            });
-
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (place.geometry) {
-                    setPlace(place);
-                    console.log('Selected address:', place);
-                    // Extract postal code from address components
-                    const addressComponents = place.address_components;
-                    const postalCodeComponent = addressComponents.find(component => component.types.includes('postal_code'));
-                    if (postalCodeComponent) {
-                        setPostalCode(postalCodeComponent.long_name);
-                    }
-                }
-            });
-        }
-    };
 
     // Fetch clients and their properties
     const fetchClientsWithProperties = async () => {
@@ -83,27 +43,21 @@ export default function CreateContractForm() {
     };
 
     useEffect(() => {
-        loadGoogleMapsAPI();
         fetchClientsWithProperties();
     }, []);
-
-    useEffect(() => {
-        // Wait for Google Maps API to load and then initialize Autocomplete
-        if (window.google && window.google.maps) {
-            initializeAutocomplete();
-        } else {
-            const interval = setInterval(() => {
-                if (window.google && window.google.maps) {
-                    clearInterval(interval);
-                    initializeAutocomplete();
-                }
-            }, 100);
-        }
-    }, [window.google]);
 
     const handleClientChange = (e) => {
         const clientId = e.target.value;
         setSelectedClient(clientId);
+
+        // Filter properties based on the selected client ID and format the property details
+        const clientProperties = clientsWithProperties
+            .find(client => client.clientId === parseInt(clientId))?.listOfClientSiteDto || [];
+
+        const formattedProperties = clientProperties.map(property =>
+            `${property.streetAddress}, ${property.unitNumber}, ${property.postalCode}`
+        );
+
         setFilteredProperties(formattedProperties);
     };
 
@@ -118,8 +72,8 @@ export default function CreateContractForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedClient || !selectedPackage || !selectedProperty || !startDate || !endDate || !startTime || !place) {
-            setError('Please fill in all details, including the address.');
+        if (!selectedClient || !selectedPackage || !selectedProperty || !startDate || !endDate || !startTime) {
+            setError('Please select a client, package type, property, and provide contract duration.');
             return;
         }
         setError('');
@@ -130,21 +84,9 @@ export default function CreateContractForm() {
         }
 
         // Prepare data for submission
-        const formData = {
-            client: selectedClient,
-            package: selectedPackage,
-            property: selectedProperty,
-            frequency: selectedFrequency,
-            startDate,
-            endDate,
-            startTime,
-            address: place.name,
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-        };
+        const formData = {};
 
         try {
-            // Make API call to submit the form data
             // const response = await axios.post('https://yourapi.com/leaves', formData);
             // console.log('Response:', response.data);
             setStartDate('');
@@ -160,60 +102,52 @@ export default function CreateContractForm() {
     return (
         <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
             <div className="space-y-6">
-                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Create Contract For New Client</h2>
+                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Create Contract For Existing Client</h2>
 
                 <div className='flex items-center gap-4'>
-                    <div className="w-full">
+                    <div className="w-1/2">
                         <label htmlFor="client-name" className="block text-md font-medium leading-6 text-gray-900">
                             Client Name
                         </label>
                         <div className="mt-2">
-                            <input type="text" id="client-name" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
+                            <select
+                                id="client-name"
+                                value={selectedClient}
+                                onChange={handleClientChange}
+                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                            >
+                                <option value="" disabled>Select Client</option>
+                                {clientsWithProperties.map((client) => (
+                                    <option key={client.clientId} value={client.clientId}>
+                                        {client.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-                </div>
-
-                <label htmlFor="client-prop" className="block text-md font-medium leading-6 text-gray-900">
-                    Client Property Address
-                </label>
-                <div className='flex items-center gap-4'>
                     <div className="w-1/2">
-                        <label htmlFor="unit-number" className="block text-sm font-medium text-gray-700 mb-1">
-                            Unit Number
-                        </label>
-                        <input type="text" id="unit-number" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
-
-                    </div>
-                    <div className="w-1/2">
-                        <label htmlFor="street-name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Street Name
-                        </label>
-                        <input
-                            ref={addressInputRef}
-                            type="text"
-                            id="street-name"
-                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                            placeholder="Enter address"
-                        />
-                    </div>
-                    <div className="w-1/2">
-                        <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700">
-                            Postal Code
+                        <label htmlFor="client-prop" className="block text-md font-medium leading-6 text-gray-900">
+                            Existing Client Property
                         </label>
                         <div className="mt-2">
-                            <input
-                                type='number'
-                                id="postal-code"
+                            <select
+                                id="client-prop"
+                                value={selectedProperty}
+                                onChange={(e) => setSelectedProperty(e.target.value)}
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                value={postalCode}
-                                readOnly
-                            />
+                            >
+                                <option value="" disabled>Select Existing Property</option>
+                                {filteredProperties.map((property, index) => (
+                                    <option key={index} value={property}>
+                                        {property}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
 
-
-                <label className="block text-md font-medium leading-6 text-gray-900">
+                <label htmlFor="package-details" className="block text-md font-medium leading-6 text-gray-900">
                     Package Details
                 </label>
                 <div className='flex items-center gap-4'>
@@ -278,7 +212,7 @@ export default function CreateContractForm() {
                     <label htmlFor="period" className="block text-md font-medium leading-6 text-gray-900">
                         Contract Duration
                     </label>
-                    <div className="mt-4 space-y-4">
+                    <div className="mt-2 space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-1/2">
                                 <label className="block text-sm font-medium text-gray-700">Start Date</label>
@@ -313,14 +247,13 @@ export default function CreateContractForm() {
                         </div>
                     </div>
                 </div>
-                {error && <p className="text-red-500 mt-2">{error}</p>}
+
                 <Button
                     type="submit"
-                    label="Create Contract &nbsp;"
+                    label="Create Contract"
                     className="mt-6 p-button-primary"
-                    icon="pi pi-plus-circle"
-                    iconPos='right'
                 />
+                {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>
         </form>
     );

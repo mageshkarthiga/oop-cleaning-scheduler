@@ -7,6 +7,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import { SplitButton } from 'primereact/splitbutton';
 
 const fetchShifts = async () => {
     try {
@@ -50,7 +51,7 @@ export default function WorkerShifts() {
 
     const handleRowSelect = (contractId) => {
         if (typeof window !== "undefined") {
-            router.push(`/contract/form/existing/${contractId}`);
+            router.push(`/contract/existing/${contractId}`);
         }
     };
 
@@ -76,17 +77,27 @@ export default function WorkerShifts() {
         }
     }
 
-    const routeToCreateContract = () => {
+    const routeToCreateContract = (type) => {
         if (typeof window !== "undefined") {
-            router.push(`/contract/form/new`);
+            const path = type === 'new' ? '/contract/form/new' : '/contract/form/existing';
+            router.push(path);
         }
     };
 
     return (
         <div className="container mx-auto p-4 card border-4">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Contracts</h2>
-            <Button label="Create New Contract &nbsp;" icon="pi pi-plus-circle" iconPos='right' severity='secondary' onClick={() => routeToCreateContract()}/>
-            <br/><br/>
+            <SplitButton
+                label="&nbsp;Create Contract"
+                model={[
+                    { label: 'With Existing Client', command: () => routeToCreateContract('existing') },
+                    { label: 'With New Client', command: () => routeToCreateContract('new') }
+                ]}
+                className="mb-4"
+                icon="pi pi-plus"
+                dropdownIcon="pi pi-chevron-down"
+            />
+            <br /><br />
             <DataTable value={shifts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
                 <Column field="client.name" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} />
                 <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />

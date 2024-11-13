@@ -1,12 +1,13 @@
 "use client";
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { Toast } from 'primereact/toast';
 import axios from 'axios';
 
 export default function SessionDetails() {
@@ -23,6 +24,7 @@ export default function SessionDetails() {
     const [endDate, setEndDate] = useState('');
     const [endTime, setEndTime] = useState('');
     const router = useRouter();
+    const toast = useRef(null);
 
     useEffect(() => {
         axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`)
@@ -119,6 +121,8 @@ export default function SessionDetails() {
                 return 'warning';
             case 'FINISHED':
                 return 'success';
+            case 'CANCELLED':
+                return 'danger';
             default:
                 return null;
         }
@@ -129,10 +133,6 @@ export default function SessionDetails() {
             router.push(`/shift/${shiftId}`);
         }
     };
-
-    const handleUnassignSelect = (shiftId) => {
-
-    }
 
     const viewButtonTemplate = (rowData) => {
         return (
@@ -152,10 +152,60 @@ export default function SessionDetails() {
                 label="Unassign" 
                 severity="danger" 
                 outlined
-                onClick={() => handleUnassignSelect(rowData.shiftId)} 
+                onClick={() => handleWorkerUnassign(rowData.shiftId)} 
             />
         );
     }
+
+    const handleWorkerUnassign = async(shiftId) => {
+        try{
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
+            if(response.code==200){
+                toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 3000 });
+            }
+        }
+        catch(error){
+            toast.current.show({ severity: 'error', summary: 'Unassign Failed', detail: 'Failed to unassign worker. Please try again.', life: 3000 });
+        }
+    };
+
+    const cancelSession = async () => {
+        try {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/cancel-cleaning-session/${id}`);
+            if (response.status === 200) {
+                toast.current.show({ severity: 'success', summary: 'Session Cancelled', detail: 'Session was successfully cancelled.', life: 3000 });
+            }
+        } catch (error) {
+            console.log("Error cancelling session", error);
+            toast.current.show({ severity: 'error', summary: 'Cancellation Failed', detail: 'Failed to cancel session. Please try again.', life: 3000 });
+        }
+    };
+
+    const updateSession = async () => {
+        try {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/update-cleaning-session/${id}`, {
+                clientName: session.clientName,
+                clientPhone: session.clientPhone,
+                clientAddress: session.clientAddress,
+                latitude: session.latitude,
+                longitude: session.longitude,
+                sessionStartDate: startDate, 
+                sessionEndDate: endDate,     
+                sessionStartTime: startTime, 
+                sessionEndTime: endTime,  
+                planningStage: session.planningStage,
+                sessionStatus: session.sessionStatus
+            });
+    
+            if (response.status === 200) {
+                toast.current.show({ severity: 'success', summary: 'Session Updated', detail: 'Session was successfully updated.', life: 3000 });
+            }
+        } catch (error) {
+            console.error("Error updating session:", error);
+            toast.current.show({ severity: 'error', summary: 'Update Failed', detail: 'Failed to update session. Please try again.', life: 3000 });
+        }
+    };
+    
 
     return (
         <div className="container m-auto p-4">
@@ -242,7 +292,10 @@ export default function SessionDetails() {
                                 ))}
                             </select>
                         )}
-                        <Button label="Update" className="mt-5" />
+                        <div className='flex flex-row space-x-4'>
+                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()}/>
+                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()}/>
+                        </div>
                     </div>
                 </div>
             </Card>
