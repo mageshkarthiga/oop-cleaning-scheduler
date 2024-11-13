@@ -46,7 +46,7 @@ export default function SessionDetails() {
                 const allWorkers = foundSession.shifts
                     ? foundSession.shifts.map(shift => {
                         if (shift.workerName) {
-                            return { workerName:shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId }; 
+                            return { workerName: shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId };
                         } else {
                             console.log("Shift worker is null or undefined");
                             return null;
@@ -136,35 +136,35 @@ export default function SessionDetails() {
 
     const viewButtonTemplate = (rowData) => {
         return (
-            <Button 
-                label="View" 
-                severity="help" 
+            <Button
+                label="View"
+                severity="help"
                 outlined
-                onClick={() => handleViewSelect(rowData.shiftId)} 
+                onClick={() => handleViewSelect(rowData.shiftId)}
             />
-            
+
         );
     };
 
     const unassignButtonTemplate = (rowData) => {
         return (
-            <Button 
-                label="Unassign" 
-                severity="danger" 
+            <Button
+                label="Unassign"
+                severity="danger"
                 outlined
-                onClick={() => handleWorkerUnassign(rowData.shiftId)} 
+                onClick={() => handleWorkerUnassign(rowData.shiftId)}
             />
         );
     }
 
-    const handleWorkerUnassign = async(shiftId) => {
-        try{
+    const handleWorkerUnassign = async (shiftId) => {
+        try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
-            if(response.code==200){
+            if (response.code == 200) {
                 toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 3000 });
             }
         }
-        catch(error){
+        catch (error) {
             toast.current.show({ severity: 'error', summary: 'Unassign Failed', detail: 'Failed to unassign worker. Please try again.', life: 3000 });
         }
     };
@@ -189,14 +189,14 @@ export default function SessionDetails() {
                 clientAddress: session.clientAddress,
                 latitude: session.latitude,
                 longitude: session.longitude,
-                sessionStartDate: startDate, 
-                sessionEndDate: endDate,     
-                sessionStartTime: startTime, 
-                sessionEndTime: endTime,  
+                sessionStartDate: startDate,
+                sessionEndDate: endDate,
+                sessionStartTime: startTime,
+                sessionEndTime: endTime,
                 planningStage: session.planningStage,
                 sessionStatus: session.sessionStatus
             });
-    
+
             if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Session Updated', detail: 'Session was successfully updated.', life: 3000 });
             }
@@ -205,7 +205,7 @@ export default function SessionDetails() {
             toast.current.show({ severity: 'error', summary: 'Update Failed', detail: 'Failed to update session. Please try again.', life: 3000 });
         }
     };
-    
+
 
     return (
         <div className="container m-auto p-4">
@@ -261,16 +261,23 @@ export default function SessionDetails() {
                         <p className="font-semibold mt-4">Session Status:
                             <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
                         </p>
+                        <div className='flex flex-row space-x-4'>
+                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()} />
+                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()} />
+                        </div>
                     </div>
+
+                    {/* Divider */}
+                    <div className="border-l-2 border-gray-300 mx-6" />
 
                     {/* Column for worker assignments */}
                     <div className="flex-1">
                         <p className="font-semibold">Shift Assigned To:</p>
                         {workers.length > 0 ? (
                             <DataTable value={workers} size="small" className="w-full mt-2">
-                                <Column field="workerName" header="Name" style={{ color: "black", backgroundColor: "white" }}/>
-                                <Column field="workerPhone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }}/>
-                                <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }}/>
+                                <Column field="workerName" header="Name" style={{ color: "black", backgroundColor: "white" }} />
+                                <Column field="workerPhone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
+                                <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                                 <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                             </DataTable>
                         ) : (
@@ -292,10 +299,6 @@ export default function SessionDetails() {
                                 ))}
                             </select>
                         )}
-                        <div className='flex flex-row space-x-4'>
-                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()}/>
-                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()}/>
-                        </div>
                     </div>
                 </div>
             </Card>

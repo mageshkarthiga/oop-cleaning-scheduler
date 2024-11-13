@@ -161,17 +161,14 @@ export default function ContractDetails() {
                 <Toast ref={toast} />
             </div>
             <div className="flex flex-row">
-                <div className='w-1/2'>
+                <div className="w-1/2 pr-4">
                     <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Contract Details</h2>
                     <div className="space-y-4">
-                        {/* <div>
-                            <strong>Client Name:</strong> {contract.client.name}
-                        </div> */}
                         <div>
-                            <strong>Property Address:</strong> {contract.clientSite.streetAddress}
+                            <strong>Property Address:</strong> {contract.clientSite.unitNumber}, {contract.clientSite.streetAddress}, Singapore {contract.clientSite.postalCode}
                         </div>
                         <div>
-                            <strong>Package Type:</strong> {contract.packageType}
+                            <strong>Property Type:</strong> {contract.clientSite.propertyType}
                         </div>
                         <div>
                             <strong>Frequency:</strong> {contract.frequency}
@@ -208,7 +205,11 @@ export default function ContractDetails() {
                     </div>
                     <Button label="Update" className="mt-4" onClick={updateContractDetails} />
                 </div>
-                <div className='w-3/4'>
+
+                {/* Divider */}
+                <div className="border-l-2 border-gray-300 mx-6" />
+
+                <div className="w-3/4">
                     <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Cleaning Sessions</h2>
                     {cleaningSessions.length > 0 ? (
                         <DataTable value={cleaningSessions} sortField='sessionStartDate' paginator rows={5} loading={loading}>

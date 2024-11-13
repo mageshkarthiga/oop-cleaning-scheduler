@@ -71,20 +71,8 @@ export default function CreateContractForm() {
         }
     };
 
-    // Fetch clients and their properties
-    const fetchClientsWithProperties = async () => {
-        try {
-            const response = await axios.get('http://localhost:8080/api/v0.1/client/get-clients-with-client-sites/');
-            setClientsWithProperties(response.data);
-        } catch (error) {
-            console.error('Error fetching clients and properties:', error);
-            setError('Failed to load clients and properties. Please try again later.');
-        }
-    };
-
     useEffect(() => {
         loadGoogleMapsAPI();
-        fetchClientsWithProperties();
     }, []);
 
     useEffect(() => {
@@ -202,11 +190,11 @@ export default function CreateContractForm() {
                         </label>
                         <div className="mt-2">
                             <input
-                                type='number'
+                                type='number' 
                                 id="postal-code"
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                                 value={postalCode}
-                                readOnly
+                                onChange={(e) => setPostalCode(e.target.value)}
                             />
                         </div>
                     </div>
