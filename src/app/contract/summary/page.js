@@ -76,9 +76,17 @@ export default function WorkerShifts() {
         }
     }
 
+    const routeToCreateContract = () => {
+        if (typeof window !== "undefined") {
+            router.push(`/contract/form/new`);
+        }
+    };
+
     return (
         <div className="container mx-auto p-4 card border-4">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Contracts</h2>
+            <Button label="Create New Contract &nbsp;" icon="pi pi-plus-circle" iconPos='right' severity='secondary' onClick={() => routeToCreateContract()}/>
+            <br/><br/>
             <DataTable value={shifts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
                 <Column field="client.name" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} />
                 <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />

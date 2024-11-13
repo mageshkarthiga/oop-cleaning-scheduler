@@ -1,16 +1,17 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
+import { Tag } from 'primereact/tag';
 import {
     APIProvider,
     Map,
     useMapsLibrary,
     useMap
 } from '@vis.gl/react-google-maps';
-import { Tag } from 'primereact/tag';
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -54,7 +55,6 @@ const GoogleMap = ({ origin, destination }) => {
         window.open(googleMapsUrl, '_blank');
     };
 
-    // Update direction route
     useEffect(() => {
         if (!directionsRenderer) return;
         directionsRenderer.setRouteIndex(routeIndex);
@@ -80,14 +80,15 @@ export default function DetailsPage() {
     const [error, setError] = useState(null);
     const [isSessionStarted, setIsSessionStarted] = useState(false);
     const [isSessionFinished, setIsSessionFinished] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null); 
+    const toast = useRef(null);
 
-    // Fetch shift data from API
     useEffect(() => {
         async function fetchShiftData() {
             try {
                 const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
                 const data = response.data;
-                data.worker.homeLocation = {
+                data.workerLocation = {
                     "locationId": 1,
                     "address": "88 Corporation Road",
                     "postalCode": "649823",
@@ -96,13 +97,10 @@ export default function DetailsPage() {
                     "longitude": 103.881565630968,
                     "subzone": null
                 };
-                const workerLocation = data.worker.homeLocation;
-                const shiftLocation = data.location;
                 console.log(data)
 
-                // Update state with origin and destination
-                setOrigin(`${workerLocation.latitude},${workerLocation.longitude}`);
-                setDestination(`${shiftLocation.latitude},${shiftLocation.longitude}`);
+                setOrigin(`${data.workerLocation.latitude},${data.workerLocation.longitude}`);
+                setDestination(`${data.latitude},${data.longitude}`);
                 setShift(data);
                 setLoading(false);
             } catch (error) {
@@ -115,27 +113,22 @@ export default function DetailsPage() {
         fetchShiftData();
     }, [id]);
 
-    const startSession = async () => {
-        try {
-            const date = new Date();
-            const currentDate = new Intl.DateTimeFormat('en-SG', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            }).format(date).replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1');
-            const currentTime = date.toLocaleTimeString('en-SG', { hour12: false });
-            const updatedShift = {
-                ...shift,
-                actualStartDate: currentDate,
-                actualStartTime: currentTime,
-                workingStatus: 'WORKING'
-            };
-            console.log(updatedShift);
+    const handleImageUpload = (event) => {
+        setSelectedImage(event.target.files[0]);
+    };
 
-            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/${id}`, updatedShift);
+    const startSession = async () => {
+        if (!selectedImage) {
+            toast.current.show({ severity: 'warn', summary: 'No Image Uploaded', detail: 'Please upload an image to start the shift.' });
+            return;
+        }
+        try {
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/start-shift/${id}`, updatedShift);
             if (response.status === 200) {
                 console.log('Session started successfully', response);
                 setIsSessionStarted(true);
+                setSelectedImage(null);
+                toast.current.show({ severity: 'success', summary: 'Shift Started', detail: 'Shift has started successfully!' });
                 const updatedResponse = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
                 setShift(updatedResponse.data);
             }
@@ -146,33 +139,26 @@ export default function DetailsPage() {
 
 
     const endSession = async () => {
+        if (!selectedImage) {
+            toast.current.show({ severity: 'warn', summary: 'No Image Uploaded', detail: 'Please upload an image to end the shift.' });
+            return;
+        }
         try {
-            const date = new Date();
-            const currentDate = new Intl.DateTimeFormat('en-SG', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            }).format(date).replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'); 
-            const currentTime = date.toLocaleTimeString('en-SG', { hour12: false });
-            const updatedShift = {
-                ...shift,
-                actualEndDate: currentDate,
-                actualEndTime: currentTime,
-                workingStatus: 'FINISHED'
-            };
-            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/${id}`, updatedShift);
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/update-shift/${id}`);
             if (response.status === 200) {
                 console.log('Session ended successfully', response);
                 setIsSessionStarted(false);
                 setIsSessionFinished(true);
+                setSelectedImage(null); 
+                toast.current.show({ severity: 'success', summary: 'Shift Ended', detail: 'Shift has ended successfully!' });
                 const updatedResponse = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
                 setShift(updatedResponse.data);
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error updating details:", error);
         }
     };
+    
 
     const getSeverity = (shift) => {
         switch (shift.workingStatus) {
@@ -205,7 +191,8 @@ export default function DetailsPage() {
     return (
         <APIProvider apiKey={API_KEY}>
         <div className="container m-auto p-4">
-            <Card title={`Details for Shift ${shift.shiftId || `Shift ${id}`}`} className="m-5">
+            <Toast ref={toast} />
+            <Card title={`Details for Shift ${shift.shiftId || `Shift ${id}`}`} className="m-5 p-4">
                 <div className="flex">
                     {/* Column for details */}
                     <div className="flex-1">
@@ -217,9 +204,15 @@ export default function DetailsPage() {
                             <p className="font-semibold">Scheduled Shift End:</p>
                             <p>{formatDate(shift.sessionEndDate)} at {shift.sessionEndTime}</p>
                         </div>
+
+                        <p className="font-semibold">Client Name:</p>
+                        <p>{shift.clientName}</p> 
+
+                        <p className="font-semibold mt-4">Client Phone Number:</p>
+                        <a href={`tel:${shift.clientPhone}`} className="underline text-blue-400">{shift.clientPhone}</a>
     
-                        <p className="font-semibold">Shift Address:</p>
-                        <p>{shift.location.address}</p>
+                        <p className="font-semibold mt-4">Shift Address:</p>
+                        <p>{shift.clientAddress}</p> 
     
                         <p className="font-semibold mt-4">Status:
                             <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
@@ -227,11 +220,20 @@ export default function DetailsPage() {
     
                         <div className='mt-4 mb-5'>
                             <h3 className="text-lg font-semibold">Shift Actions:</h3>
-                            <div className="flex flex-col space-y-2 w-1/2 mb-5">
+                            <div className='mt-4 mb-5'>
+                                <h3 className="font-semibold">Upload Image:</h3>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="my-3 w-1/2 p-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    
+                                />
+                                <br/>
                                 {!isSessionFinished && (
                                     isSessionStarted ? (
                                         <Button
-                                            label="End Session"
+                                            label="End Shift &nbsp;"
                                             icon="pi pi-times-circle"
                                             iconPos="right"
                                             severity="danger"
@@ -239,7 +241,7 @@ export default function DetailsPage() {
                                         />
                                     ) : (
                                         <Button
-                                            label="Start Session"
+                                            label="Start Shift &nbsp;"
                                             icon="pi pi-check-circle"
                                             iconPos="right"
                                             severity="success"
@@ -253,13 +255,13 @@ export default function DetailsPage() {
                     </div>
     
                     {/* Column for the map */}
-                    <div className='ml-4' style={{ flex: '0 0 450px' }}>
+                    <div className='ml-4' style={{ flex: '0 0 600px' }}>
                         <Map
-                            defaultCenter={{ lat: shift.worker.homeLocation.latitude || 0, lng: shift.worker.homeLocation.longitude || 0 }}
+                            defaultCenter={{ lat: shift.workerLocation.latitude || 0, lng: shift.workerLocation.longitude || 0 }}
                             defaultZoom={9}
                             gestureHandling="greedy"
                             fullscreenControl={false}
-                            style={{ width: '100%', height: '450px' }}
+                            style={{ width: '100%', height: '550px' }}
                         />
                     </div>
                 </div>

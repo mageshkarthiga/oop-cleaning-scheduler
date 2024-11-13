@@ -10,11 +10,11 @@ export default function CalendarView() {
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await axios.get('http://localhost:8080/api/v0.1/cleaningSession');
+                const response = await axios.get('http://localhost:8080/api/v0.1/cleaningSession/calendar-view');
                 const data = response.data;
                 const formattedEvents = data.map(cleaningSession => ({
                     id: cleaningSession.cleaningSessionId.toString(),
-                    title: cleaningSession.sessionDescription,
+                    title: `Session for ${cleaningSession.clientName.split(' ')[0]} ${cleaningSession.clientName.split(' ')[1].charAt(0)}.`,
                     start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
                     end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
                     backgroundColor: cleaningSession.planningStage === "EMBER" 

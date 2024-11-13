@@ -164,11 +164,11 @@ export default function ContractDetails() {
                 <div className='w-1/2'>
                     <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Contract Details</h2>
                     <div className="space-y-4">
-                        <div>
+                        {/* <div>
                             <strong>Client Name:</strong> {contract.client.name}
-                        </div>
+                        </div> */}
                         <div>
-                            <strong>Property Address:</strong> {contract.location.address}
+                            <strong>Property Address:</strong> {contract.clientSite.streetAddress}
                         </div>
                         <div>
                             <strong>Package Type:</strong> {contract.packageType}

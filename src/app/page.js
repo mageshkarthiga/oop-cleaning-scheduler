@@ -344,7 +344,7 @@ export default function HomePage() {
   return (
     <div className='mx-10'>
       <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">Admin Dashboard</h1>
-      <Button label='Download Stats' icon="pi pi-file-excel" iconPos='right' severity='info' onClick={() =>  window.open('http://localhost:8080/api/v0.1/admins/download-statistics/2024')}/>
+      <Button label='Download Stats &nbsp;' icon="pi pi-file-excel" iconPos='right' severity='info' onClick={() =>  window.open('http://localhost:8080/api/v0.1/admins/download-statistics/2024')}/>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <ProgressSpinner />

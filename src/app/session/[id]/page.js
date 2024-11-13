@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card } from 'primereact/card';
@@ -19,13 +18,16 @@ export default function SessionDetails() {
     const [selectedWorker, setSelectedWorker] = useState([]);
     const [availableWorker, setAvailableWorker] = useState([]);
     const [needWorkers, setNeedWorkers] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [endTime, setEndTime] = useState('');
     const router = useRouter();
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/v0.1/cleaningSession`)
+        axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`)
             .then((response) => {
-                const fetchedData = response.data;
-                const foundSession = fetchedData.find(cleaningSession => cleaningSession.cleaningSessionId.toString() === id);
+                const foundSession = response.data;
                 console.log(foundSession);
 
                 if (!foundSession) {
@@ -36,13 +38,13 @@ export default function SessionDetails() {
 
                 if (foundSession.planningStage === "EMBER" || foundSession.planningStage === "RED") {
                     setNeedWorkers(true);
-                    addWorkers(foundSession.cleaningSessionId);
+                    getAdditionalWorkers(foundSession.cleaningSessionId);
                 }
 
                 const allWorkers = foundSession.shifts
                     ? foundSession.shifts.map(shift => {
-                        if (shift.worker) {
-                            return { ...shift.worker, shiftId: shift.shiftId }; // Include shiftId with worker details
+                        if (shift.workerName) {
+                            return { workerName:shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId }; 
                         } else {
                             console.log("Shift worker is null or undefined");
                             return null;
@@ -50,7 +52,14 @@ export default function SessionDetails() {
                     }).filter(worker => worker !== null)
                     : [];
                 setWorkers(allWorkers);
+
+                // Set initial session and date-time states
                 setSession(foundSession);
+                setStartDate(foundSession.sessionStartDate);
+                setStartTime(foundSession.sessionStartTime);
+                setEndDate(foundSession.sessionEndDate);
+                setEndTime(foundSession.sessionEndTime);
+
                 setLoading(false);
             })
             .catch((error) => {
@@ -60,7 +69,7 @@ export default function SessionDetails() {
             });
     }, [id]);
 
-    const addWorkers = async (shiftId) => {
+    const getAdditionalWorkers = async (shiftId) => {
         try {
             // const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
             // setAvailableWorker(response.data);
@@ -70,9 +79,11 @@ export default function SessionDetails() {
         }
     };
 
-    if (loading) return <ProgressSpinner className='m-auto'/>;
+    if (loading) return <ProgressSpinner className='m-auto' />;
     if (error) return <div>Error: {error}</div>;
     if (!session) return <div>No data found for ID {id}</div>;
+
+    const handleDateChange = (e, setDate) => setDate(e.target.value);
 
     const getPlanningStageSeverity = (session) => {
         switch (session.planningStage) {
@@ -147,66 +158,93 @@ export default function SessionDetails() {
     }
 
     return (
-        <div className='container m-auto p-5'>
-            <Card title={`Details for Session ${id}`} className="shadow-lg rounded-lg p-6">
-                <div className="mb-4">
-                    <p className="text-lg font-medium">
-                        <strong>Session Start:</strong> {session.sessionStartDate} at {session.sessionStartTime}
-                    </p>
-                    <p className="text-lg font-medium">
-                        <strong>Session End:</strong> {session.sessionEndDate} at {session.sessionEndTime}
-                    </p>
-                </div>
-                <div className="mb-4">
-                    <p className="text-lg font-medium">
-                        <strong>Planning Status:</strong>
-                        <Tag value={getPlanningStage(session)} severity={getPlanningStageSeverity(session)} className="ml-2" />
-                    </p>
-                </div>
-                <div className="mb-4">
-                    <p className="text-lg font-medium">
-                        <strong>Shift Assigned To:</strong>
-                    </p>
-                    <div className='container w-3/4'>
-                        <DataTable value={workers} size='small'>
-                            <Column field="name" header="Name" style={{ color: "black", backgroundColor: "white" }} />
-                            <Column field="phone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }} />
-                            <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                            <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
-                        </DataTable>
+        <div className="container m-auto p-4">
+            <Card title={`Details for Session ${id}`} className="m-5 p-4 shadow-lg rounded-lg">
+                <div className="flex">
+                    {/* Column for session details */}
+                    <div className="flex-1">
+                        <p className="font-semibold">Client Name:</p>
+                        <p>{session.clientName}</p>
+
+                        <p className="font-semibold mt-4">Client Phone Number:</p>
+                        <a href={`tel:${session.clientPhone}`} className="underline text-blue-400">{session.clientPhone}</a>
+
+                        <p className="font-semibold mt-4">Client Address:</p>
+                        <p>{session.clientAddress}</p>
+
+                        <div className="flex flex-col my-4">
+                            <p className="font-semibold">Scheduled Session Start:</p>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => handleDateChange(e, setStartDate)}
+                                className="border border-gray-300 rounded p-2 w-3/4"
+                            />
+                            <input
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => handleDateChange(e, setStartTime)}
+                                className="border border-gray-300 rounded p-2 mt-2 w-3/4"
+                            />
+                        </div>
+
+                        <div className="flex flex-col my-4">
+                            <p className="font-semibold">Scheduled Session End:</p>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => handleDateChange(e, setEndDate)}
+                                className="border border-gray-300 rounded p-2 w-3/4"
+                            />
+                            <input
+                                type="time"
+                                value={endTime}
+                                onChange={(e) => handleDateChange(e, setEndTime)}
+                                className="border border-gray-300 rounded p-2 mt-2 w-3/4"
+                            />
+                        </div>
+
+                        <p className="font-semibold mt-4">Planning Status:
+                            <Tag value={getPlanningStage(session)} severity={getPlanningStageSeverity(session)} className="ml-2" />
+                        </p>
+
+                        <p className="font-semibold mt-4">Session Status:
+                            <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
+                        </p>
                     </div>
-                    <br />
-                    <p className="text-lg font-medium">
-                        <strong>Available Workers:</strong>
-                    </p>
-                    <div className='w-3/4'>
-                        {needWorkers && (
-                            <div className="w-3/4">
-                                <select
-                                    value={availableWorker}
-                                    onChange={(e) => setSelectedWorker([...e.target.selectedOptions].map(option => option.value))}
-                                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    multiple
-                                >
-                                    {workers.map((worker, index) => (
-                                        <option key={index} value={worker.id} id={worker.id}>
-                                            {worker.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+
+                    {/* Column for worker assignments */}
+                    <div className="flex-1">
+                        <p className="font-semibold">Shift Assigned To:</p>
+                        {workers.length > 0 ? (
+                            <DataTable value={workers} size="small" className="w-full mt-2">
+                                <Column field="workerName" header="Name" style={{ color: "black", backgroundColor: "white" }}/>
+                                <Column field="workerPhone" header="Phone Number" style={{ color: "black", backgroundColor: "white" }}/>
+                                <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }}/>
+                                <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                            </DataTable>
+                        ) : (
+                            <p>No workers assigned to this shift.</p>
                         )}
 
+                        <p className="font-semibold mt-4">Available Workers:</p>
+                        {needWorkers && (
+                            <select
+                                value={availableWorker}
+                                onChange={(e) => setSelectedWorker([...e.target.selectedOptions].map(option => option.value))}
+                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mt-2"
+                                multiple
+                            >
+                                {workers.map((worker, index) => (
+                                    <option key={index} value={worker.id}>
+                                        {worker.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        <Button label="Update" className="mt-5" />
                     </div>
                 </div>
-                <div>
-                    <p className="text-lg font-medium">
-                        <strong>Session Status:</strong>
-                        <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
-                    </p>
-                </div>
-                <br/>
-                <Button label="Update"/>
             </Card>
         </div>
     );
