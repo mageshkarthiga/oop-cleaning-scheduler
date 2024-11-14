@@ -77,12 +77,6 @@ export default function CreateContractForm() {
         loadGoogleMapsAPI();
     }, []);
 
-    const handleClientChange = (e) => {
-        const clientId = e.target.value;
-        setSelectedClient(clientId);
-        setFilteredProperties(formattedProperties);
-    };
-
     const handlePropertyTypeChange = (e) => {
         const propertyType = e.target.value;
         setSelectedProperty(propertyType);

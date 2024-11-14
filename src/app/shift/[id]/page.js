@@ -64,7 +64,6 @@ const GoogleMap = ({ origin, destination }) => {
 
     return (
         <div className='container' style={{ width: '400px' }}>
-            <h2>{selected.summary}</h2>
             <p><strong>Travel Duration:</strong> {leg.duration?.text}</p>
             <Button label="View Directions in Google Maps &nbsp;" icon="pi pi-map" onClick={openGoogleMaps} iconPos="right" size='small' outlined/>
         </div>

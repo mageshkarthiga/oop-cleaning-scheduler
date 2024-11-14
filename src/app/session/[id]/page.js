@@ -1,6 +1,7 @@
 "use client";
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { Card } from 'primereact/card';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
@@ -8,7 +9,6 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-import axios from 'axios';
 import { Dialog } from 'primereact/dialog';
 
 export default function SessionDetails() {
@@ -170,15 +170,15 @@ export default function SessionDetails() {
     const handleWorkerUnassign = async (shiftId) => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
-            console.log(response);
-            if (response.status === 200) {
-                toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 3000 });
+            if (response.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 4000 });
+                // Refresh the workers list
                 const updatedWorkers = workers.filter(worker => worker.shiftId !== shiftId);
                 setWorkers(updatedWorkers);
             }
         }
         catch (error) {
-            toast.current.show({ severity: 'error', summary: 'Unassign Failed', detail: 'Failed to unassign worker. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Unassign Failed', detail: 'Failed to unassign worker. Please try again.', life: 4000 });
         }
     };
 
@@ -187,61 +187,59 @@ export default function SessionDetails() {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/assign-worker/${unassignedShiftId}`, {
                 workerId: selectedWorker
             });
-            if (response.status === 200) {
-                toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 3000 });
+            if (response.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 4000 });
                 setShowAvailableWorkers(false);
+                // Refresh the workers list
                 const updatedWorkers = [...workers, { workerName: response.data.workerName, workerPhone: response.data.workerPhone, shiftId: unassignedShiftId }];
                 setWorkers(updatedWorkers);
             }
         } catch (error) {
-            toast.current.show({ severity: 'error', summary: 'Reassign Failed', detail: 'Failed to reassign worker. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Reassign Failed', detail: 'Failed to reassign worker. Please try again.', life: 4000 });
         }
     };
 
     const cancelSession = async () => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/cancel-cleaning-session/${id}`);
-            if (response.status === 200) {
-                toast.current.show({ severity: 'success', summary: 'Session Cancelled', detail: 'Session was successfully cancelled.', life: 3000 });
+            if (response.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Session Cancelled', detail: 'Session was successfully cancelled.', life: 4000 });
             }
         } catch (error) {
             console.log("Error cancelling session", error);
-            toast.current.show({ severity: 'error', summary: 'Cancellation Failed', detail: 'Failed to cancel session. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Cancellation Failed', detail: 'Failed to cancel session. Please try again.', life: 4000 });
         }
     };
 
     const updateSession = async () => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/update-cleaning-session/${id}`, {
-                clientName: session.clientName,
-                clientPhone: session.clientPhone,
-                clientAddress: session.clientAddress,
-                latitude: session.latitude,
-                longitude: session.longitude,
                 sessionStartDate: startDate,
                 sessionEndDate: endDate,
                 sessionStartTime: startTime,
                 sessionEndTime: endTime,
-                planningStage: session.planningStage,
-                sessionStatus: session.sessionStatus
             });
 
-            if (response.status === 200) {
-                toast.current.show({ severity: 'success', summary: 'Session Updated', detail: 'Session was successfully updated.', life: 3000 });
+            if (response.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Session Updated', detail: 'Session was successfully updated.', life: 4000 });
             }
         } catch (error) {
             console.error("Error updating session:", error);
-            toast.current.show({ severity: 'error', summary: 'Update Failed', detail: 'Failed to update session. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Update Failed', detail: 'Failed to update session. Please try again.', life: 4000 });
         }
     };
 
-    const showDialog = () => {
-        setDialogVisible(true);
-    };
+    const dialogFooter =
+        (
+            <div className='flex flex-row space-x-4'>
+                <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
+                <Button label="Cancel &nbsp;" icon="pi pi-check" onClick={cancelSession} severity='danger' iconPos='right' outlined />
+            </div>
+        )
+
 
     return (
         <div className="container m-auto p-4">
-            <Toast ref={toast} />
             <Card title={`Details for Session ${id}`} className="m-5 p-4 shadow-lg rounded-lg">
                 <div className="flex">
                     {/* Column for session details */}
@@ -296,7 +294,7 @@ export default function SessionDetails() {
                         </p>
                         <div className='flex flex-row space-x-4'>
                             <Button label="Update Session" className="mt-5" onClick={() => updateSession()} />
-                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => showDialog()} />
+                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => setDialogVisible(true)} />
                         </div>
                     </div>
 
@@ -346,16 +344,13 @@ export default function SessionDetails() {
                     visible={dialogVisible}
                     style={{ width: '50vw' }}
                     onHide={() => setDialogVisible(false)}
-                    footer={
-                        <div className='flex flex-row space-x-4'>
-                            <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
-                            <Button label="Cancel &nbsp;" icon="pi pi-check" onClick={cancelSession} severity='danger' iconPos='right' outlined />
-                        </div>
-                    }
+                    footer={dialogFooter}
                 >
                     <p>Are you sure you want to cancel this session?</p>
                 </Dialog>
+
             </Card>
+            <Toast ref={toast} />
         </div>
     );
 }

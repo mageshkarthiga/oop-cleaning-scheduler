@@ -141,7 +141,7 @@ export default function ContractDetails() {
                 severity: 'success',
                 summary: 'Success',
                 detail: 'Contract terminated successfully.',
-                life: 3000
+                life: 4000
             });
         } catch (error) {
             console.error("Error terminating contract", error);
@@ -151,7 +151,7 @@ export default function ContractDetails() {
                 severity: 'error',
                 summary: 'Error',
                 detail: error.response ? error.response.data : 'An unexpected error occurred.',
-                life: 3000
+                life: 4000
             });
         }
     };
