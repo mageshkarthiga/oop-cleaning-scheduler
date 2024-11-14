@@ -20,7 +20,7 @@ const fetchContracts = async () => {
     }
 };
 
-export default function WorkerContracts() {
+export default function ContractSummary() {
     const [contracts, setContracts] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -52,7 +52,7 @@ export default function WorkerContracts() {
 
     const handleRowSelect = (contractId) => {
         if (typeof window !== "undefined") {
-            router.push(`/contract/existing/${contractId}`);
+            router.push(`/contract/details/${contractId}`);
         }
     };
 
@@ -80,7 +80,7 @@ export default function WorkerContracts() {
 
     const routeToCreateContract = (type) => {
         if (typeof window !== "undefined") {
-            const path = type === 'new' ? '/client/new' : '/contract/form/existing';
+            const path = type === 'new' ? '/client/new' : '/contract/form';
             router.push(path);
         }
     };

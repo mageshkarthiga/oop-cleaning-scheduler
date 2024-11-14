@@ -35,6 +35,11 @@ export default function SessionDetails() {
     const router = useRouter();
     const toast = useRef(null);
 
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    today.setHours(today.getHours());
+    const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
+
     const fetchSessionData = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`);
@@ -283,12 +288,14 @@ export default function SessionDetails() {
                             <input
                                 type="date"
                                 value={startDate}
+                                min={minDate}
                                 onChange={(e) => handleDateChange(e, setStartDate)}
                                 className="border border-gray-300 rounded p-2 w-3/4"
                             />
                             <input
                                 type="time"
                                 value={startTime}
+                                min={minTime}
                                 onChange={(e) => handleDateChange(e, setStartTime)}
                                 className="border border-gray-300 rounded p-2 mt-2 w-3/4"
                             />
@@ -299,6 +306,7 @@ export default function SessionDetails() {
                             <input
                                 type="date"
                                 value={endDate}
+                                min={startDate || minDate}
                                 onChange={(e) => handleDateChange(e, setEndDate)}
                                 className="border border-gray-300 rounded p-2 w-3/4"
                             />

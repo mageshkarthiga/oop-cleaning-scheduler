@@ -33,6 +33,7 @@ export default function Navbar() {
                 <PopoverGroup className="hidden lg:flex lg:gap-x-12">
                     <Link href="/contract/summary" className="text-sm font-semibold leading-6 text-gray-900">Contracts</Link>
                     <Link href="/calendar/admin" className="text-sm font-semibold leading-6 text-gray-900">Calendar</Link>
+                    <Link href="/client/summary" className="text-sm font-semibold leading-6 text-gray-900">Clients</Link>
                     <Link href="/leave/admin" className="text-sm font-semibold leading-6 text-gray-900">Leave Approval</Link>
                 </PopoverGroup>
             </nav>

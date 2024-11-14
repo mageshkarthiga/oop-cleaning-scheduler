@@ -2,17 +2,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { Toast } from 'primereact/toast';
 
 export default function CreateClientForm() {
-    const [selectedNoOfRooms, setselectedNoOfRooms] = useState('');
-    const [selectedProperty, setSelectedProperty] = useState('');
+    const [selectedNoOfRooms, setSelectedNoOfRooms] = useState('');
+    const [selectedPropertyType, setSelectedPropertyType] = useState('');
     const [error, setError] = useState('');
     const [roomOptions, setRoomOptions] = useState([]);
     const [clientName, setClientName] = useState('');
+    const [clientPhoneNumber, setClientPhoneNumber] = useState('');
+    const [unitNumber, setUnitNumber] = useState('');
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
-        CONDOMINIUM: ['2 Bedrooms and Below', '3 Bedrooms']
+        CONDOMINIUM: ['2-Room and Below', '3-Room']
     };
+    const router = useRouter();
+    const toast = useRef(null);
 
     const [place, setPlace] = useState(null);
     const addressInputRef = useRef(null);
@@ -33,7 +39,7 @@ export default function CreateClientForm() {
             document.head.appendChild(script);
         }
     };
-    
+
     // This function will be called once the Google Maps API script is loaded
     window.initializeAutocomplete = () => {
         if (window.google && window.google.maps) {
@@ -42,7 +48,7 @@ export default function CreateClientForm() {
                 types: ['geocode'],
                 componentRestrictions: { country: 'SG' }
             });
-    
+
             autocomplete.addListener('place_changed', () => {
                 const place = autocomplete.getPlace();
                 if (place.geometry) {
@@ -61,7 +67,7 @@ export default function CreateClientForm() {
             setTimeout(window.initializeAutocomplete, 500);
         }
     };
-    
+
 
     useEffect(() => {
         loadGoogleMapsAPI();
@@ -69,7 +75,7 @@ export default function CreateClientForm() {
 
     const handlePropertyTypeChange = (e) => {
         const propertyType = e.target.value;
-        setSelectedProperty(propertyType);
+        setSelectedPropertyType(propertyType);
 
         if (propertyTypes[propertyType]) {
             setRoomOptions(propertyTypes[propertyType]);
@@ -78,30 +84,46 @@ export default function CreateClientForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if(!selectedProperty || !selectedNoOfRooms || !clientName || !place || !postalCode) {
+        if (!selectedPropertyType || !selectedNoOfRooms || !clientName || !place || !postalCode) {
             setError('Please fill in all required fields.');
             return;
-
         }
+
+        if (clientPhoneNumber.length !== 8) {
+            setError('Phone number must be 8 digits long.');
+            return;
+        }
+
+        if (postalCode.length !== 6) {
+            setError('Postal code must be 6 digits long.');
+            return;
+        }
+
         setError('');
 
         // Prepare data for submission
         const formData = {
-            client: selectedClient,
-            property: selectedProperty,
-            address: place.name,
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
+            name: clientName,
+            phone: clientPhoneNumber,
+            homeAddress: place.name,
+            postalCode: postalCode,
+            unitNumber: unitNumber,
+            numberOfRooms: parseInt(selectedNoOfRooms.split('-')[0]),
+            propertyType: selectedPropertyType
         };
-
         try {
             // Make API call to submit the form data
-            // const response = await axios.post('https://yourapi.com/leaves', formData);
-            // console.log('Response:', response.data);
-            setStartDate('');
-            setEndDate('');
-            setStartTime('');
-            alert('Contract submitted successfully!');
+            const response = await axios.post('http://localhost:8080/api/v0.1/client/add-client/', null,
+                {
+                    params: formData
+                }
+            );
+            console.log('Response:', response);
+            if (response.status == 202) {
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client created!', life: 4000 });
+                // router.push('/contract/form');
+            }
+
         } catch (error) {
             console.error('Error submitting form:', error);
             setError('Failed to submit the application. Please try again.');
@@ -114,12 +136,20 @@ export default function CreateClientForm() {
                 <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Add New Client</h2>
 
                 <div className='flex items-center gap-4'>
-                    <div className="w-full">
+                    <div className="w-1/2">
                         <label htmlFor="client-name" className="block text-md font-medium leading-6 text-gray-900">
                             Client Name
                         </label>
                         <div className="mt-2">
-                            <input type="text" id="client-name" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" value={clientName} onChange={(e) => setClientName(e.target.value)}/>
+                            <input type="text" id="client-name" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" value={clientName} onChange={(e) => setClientName(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="w-1/2">
+                        <label htmlFor="client-phone" className="block text-md font-medium leading-6 text-gray-900">
+                            Client Phone Number
+                        </label>
+                        <div className="mt-2">
+                            <input type="number" id="client-phone" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" value={clientPhoneNumber} onChange={(e) => setClientPhoneNumber(e.target.value)} />
                         </div>
                     </div>
                 </div>
@@ -129,14 +159,15 @@ export default function CreateClientForm() {
                 </label>
                 <div className='flex items-center gap-4'>
                     <div className="w-1/2">
-                        <label htmlFor="unit-number" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="unit-number" className="block text-sm font-medium text-gray-700 mb-2">
                             Unit Number
                         </label>
-                        <input type="text" id="unit-number" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Enter unit no."/>
+                        <input type="text" id="unit-number" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Enter unit no." value={unitNumber}
+                            onChange={(e) => setUnitNumber(e.target.value)} />
 
                     </div>
                     <div className="w-1/2">
-                        <label htmlFor="street-name" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="street-name" className="block text-sm font-medium text-gray-700 mb-2">
                             Street Name
                         </label>
                         <input
@@ -153,7 +184,7 @@ export default function CreateClientForm() {
                         </label>
                         <div className="mt-2">
                             <input
-                                type='number' 
+                                type='number'
                                 id="postal-code"
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                                 placeholder="Enter postal code"
@@ -170,12 +201,12 @@ export default function CreateClientForm() {
                 </label>
                 <div className='flex items-center gap-4'>
                     <div className="w-1/2">
-                        <label htmlFor="package-type" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="property-type" className="block text-sm font-medium text-gray-700 mb-2">
                             Property Type
                         </label>
                         <select
-                            id="package-type"
-                            value={selectedProperty}
+                            id="property-type"
+                            value={selectedPropertyType}
                             onChange={handlePropertyTypeChange}
                             className="mt-2 w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                         >
@@ -192,7 +223,7 @@ export default function CreateClientForm() {
                             <select
                                 id="no-of-rooms"
                                 value={selectedNoOfRooms}
-                                onChange={(e) => setselectedNoOfRooms(e.target.value)}
+                                onChange={(e) => setSelectedNoOfRooms(e.target.value)}
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                             >
                                 <option value="" disabled>Select No. of Rooms</option>
@@ -214,6 +245,7 @@ export default function CreateClientForm() {
                     iconPos='right'
                 />
             </div>
+            <Toast ref={toast} position="top-right" />
         </form>
     );
 }

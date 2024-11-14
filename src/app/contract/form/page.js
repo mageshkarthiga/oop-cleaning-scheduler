@@ -12,6 +12,8 @@ export default function CreateContractForm() {
     const [endDate, setEndDate] = useState('');
     const [startTime, setStartTime] = useState('');
     const [error, setError] = useState('');
+    const [propertyType, setPropertyType] = useState('');
+    const [numberOfRooms, setNumberOfRooms] = useState('');
 
     const [clientsWithProperties, setClientsWithProperties] = useState([]);
     const [filteredProperties, setFilteredProperties] = useState([]);
@@ -20,7 +22,7 @@ export default function CreateContractForm() {
 
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
-        CONDOMINIUM: ['2 Bedrooms and Below', '3 Bedrooms']
+        CONDOMINIUM: ['2-Room and Below', '3-Room']
     };
 
     const today = new Date();
@@ -47,6 +49,9 @@ export default function CreateContractForm() {
     const handleClientChange = (e) => {
         const clientId = e.target.value;
         setSelectedClient(clientId);
+        setSelectedProperty('');
+        setPropertyType('');
+        setNumberOfRooms('');
 
         // Filter properties based on the selected client ID and format the property details
         const clientProperties = clientsWithProperties
@@ -55,12 +60,15 @@ export default function CreateContractForm() {
         setFilteredProperties(clientProperties);
     };
 
-    const handlePropertyTypeChange = (e) => {
-        const propertyType = e.target.value;
-        setSelectedProperty(propertyType);
+    const handlePropertyChange = (e) => {
+        const selectedPropertyAddress = e.target.value;
+        setSelectedProperty(selectedPropertyAddress);
 
-        if (propertyTypes[propertyType]) {
-            setRoomOptions(propertyTypes[propertyType]);
+        // Auto-select property type and number of rooms based on selected address
+        const property = filteredProperties.find(property => property.streetAddress === selectedPropertyAddress);
+        if (property) {
+            setPropertyType(property.propertyType);
+            setNumberOfRooms(property.numberOfRooms.toString());
         }
     };
 
@@ -135,7 +143,7 @@ export default function CreateContractForm() {
                             <select
                                 id="client-prop"
                                 value={selectedProperty}
-                                onChange={(e) => setSelectedProperty(e.target.value)}
+                                onChange={handlePropertyChange}
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                             >
                                 <option value="" disabled>Select Existing Property</option>
@@ -154,39 +162,28 @@ export default function CreateContractForm() {
                 </label>
                 <div className='flex items-center gap-4'>
                     <div className="w-1/2">
-                        <label htmlFor="package-type" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="property-type" className="block text-sm font-medium text-gray-700 mb-2">
                             Property Type
                         </label>
-                        <select
-                            id="package-type"
-                            value={selectedProperty}
-                            onChange={handlePropertyTypeChange}
-                            className="mt-2 w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                        >
-                            <option value="" disabled>Select Property Type</option>
-                            <option value="HDB">HDB</option>
-                            <option value="CONDOMINIUM">CONDOMINIUM</option>
-                        </select>
+                        <input
+                            type="text"
+                            id="property-type"
+                            value={propertyType}
+                            readOnly
+                            className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100"
+                        />
                     </div>
                     <div className="w-1/2">
-                        <label htmlFor="no-of-rooms" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="no-of-rooms" className="block text-sm font-medium text-gray-700 mb-2">
                             Number of Rooms
                         </label>
-                        <div className="mt-2">
-                            <select
-                                id="no-of-rooms"
-                                value={selectedPackage}
-                                onChange={(e) => setSelectedPackage(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                            >
-                                <option value="" disabled>Select No. of Rooms</option>
-                                {roomOptions.map((room, index) => (
-                                    <option key={index} value={room}>
-                                        {room}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <input
+                            type="text"
+                            id="no-of-rooms"
+                            value={numberOfRooms}
+                            readOnly
+                            className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100"
+                        />
                     </div>
                     <div className="w-1/2">
                         <label htmlFor="package-freq" className="block text-sm font-medium text-gray-700">
@@ -217,7 +214,7 @@ export default function CreateContractForm() {
                     <div className="mt-2 space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">Start Date</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                                 <input
                                     type="date"
                                     value={startDate}
@@ -227,7 +224,7 @@ export default function CreateContractForm() {
                                 />
                             </div>
                             <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">End Date</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                                 <input
                                     type="date"
                                     value={endDate}
@@ -237,12 +234,12 @@ export default function CreateContractForm() {
                                 />
                             </div>
                             <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
                                 <input
                                     type="time"
                                     value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
                                     min={minTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
                                     className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
