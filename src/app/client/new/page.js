@@ -3,26 +3,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
 import axios from 'axios';
 
-export default function CreateContractForm() {
-    const [selectedPackage, setSelectedPackage] = useState('');
-    const [selectedClient, setSelectedClient] = useState('');
+export default function CreateClientForm() {
+    const [selectedNoOfRooms, setselectedNoOfRooms] = useState('');
     const [selectedProperty, setSelectedProperty] = useState('');
-    const [selectedFrequency, setSelectedFrequency] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [startTime, setStartTime] = useState('');
     const [error, setError] = useState('');
     const [roomOptions, setRoomOptions] = useState([]);
-    const [frequency] = useState(['Weekly', 'Bi-Weekly']);
+    const [clientName, setClientName] = useState('');
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
         CONDOMINIUM: ['2 Bedrooms and Below', '3 Bedrooms']
     };
-
-    const today = new Date();
-    const minDate = today.toISOString().split('T')[0];
-    today.setHours(today.getHours());
-    const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
 
     const [place, setPlace] = useState(null);
     const addressInputRef = useRef(null);
@@ -88,26 +78,17 @@ export default function CreateContractForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedClient || !selectedPackage || !selectedProperty || !startDate || !endDate || !startTime || !place) {
-            setError('Please fill in all details, including the address.');
+        if(!selectedProperty || !selectedNoOfRooms || !clientName || !place || !postalCode) {
+            setError('Please fill in all required fields.');
             return;
+
         }
         setError('');
-
-        if (startDate >= endDate) {
-            setError('Start date must be before the end date.');
-            return;
-        }
 
         // Prepare data for submission
         const formData = {
             client: selectedClient,
-            package: selectedPackage,
             property: selectedProperty,
-            frequency: selectedFrequency,
-            startDate,
-            endDate,
-            startTime,
             address: place.name,
             lat: place.geometry.location.lat(),
             lng: place.geometry.location.lng(),
@@ -130,7 +111,7 @@ export default function CreateContractForm() {
     return (
         <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
             <div className="space-y-6">
-                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Create Contract For New Client</h2>
+                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Add New Client</h2>
 
                 <div className='flex items-center gap-4'>
                     <div className="w-full">
@@ -138,7 +119,7 @@ export default function CreateContractForm() {
                             Client Name
                         </label>
                         <div className="mt-2">
-                            <input type="text" id="client-name" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
+                            <input type="text" id="client-name" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" value={clientName} onChange={(e) => setClientName(e.target.value)}/>
                         </div>
                     </div>
                 </div>
@@ -151,7 +132,7 @@ export default function CreateContractForm() {
                         <label htmlFor="unit-number" className="block text-sm font-medium text-gray-700 mb-1">
                             Unit Number
                         </label>
-                        <input type="text" id="unit-number" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
+                        <input type="text" id="unit-number" className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Enter unit no."/>
 
                     </div>
                     <div className="w-1/2">
@@ -175,6 +156,7 @@ export default function CreateContractForm() {
                                 type='number' 
                                 id="postal-code"
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                placeholder="Enter postal code"
                                 value={postalCode}
                                 onChange={(e) => setPostalCode(e.target.value)}
                             />
@@ -184,7 +166,7 @@ export default function CreateContractForm() {
 
 
                 <label className="block text-md font-medium leading-6 text-gray-900">
-                    Package Details
+                    Property Details
                 </label>
                 <div className='flex items-center gap-4'>
                     <div className="w-1/2">
@@ -209,8 +191,8 @@ export default function CreateContractForm() {
                         <div className="mt-2">
                             <select
                                 id="no-of-rooms"
-                                value={selectedPackage}
-                                onChange={(e) => setSelectedPackage(e.target.value)}
+                                value={selectedNoOfRooms}
+                                onChange={(e) => setselectedNoOfRooms(e.target.value)}
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                             >
                                 <option value="" disabled>Select No. of Rooms</option>
@@ -222,71 +204,11 @@ export default function CreateContractForm() {
                             </select>
                         </div>
                     </div>
-                    <div className="w-1/2">
-                        <label htmlFor="package-freq" className="block text-sm font-medium text-gray-700">
-                            Package Frequency
-                        </label>
-                        <div className="mt-2">
-                            <select
-                                id="package-freq"
-                                value={selectedFrequency}
-                                onChange={(e) => setSelectedFrequency(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                            >
-                                <option value="" disabled>Select Package Frequency</option>
-                                {frequency.map((pkg, index) => (
-                                    <option key={index} value={pkg}>
-                                        {pkg}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1">
-                    <label htmlFor="period" className="block text-md font-medium leading-6 text-gray-900">
-                        Contract Duration
-                    </label>
-                    <div className="mt-4 space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    min={minDate}
-                                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">End Date</label>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    min={startDate || minDate}
-                                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                                <input
-                                    type="time"
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                    min={minTime}
-                                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 {error && <p className="text-red-500 mt-2">{error}</p>}
                 <Button
                     type="submit"
-                    label="Create Contract &nbsp;"
+                    label="Add Client &nbsp;"
                     className="mt-6 p-button-primary"
                     icon="pi pi-plus-circle"
                     iconPos='right'

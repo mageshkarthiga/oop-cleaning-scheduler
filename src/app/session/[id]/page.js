@@ -257,6 +257,12 @@ export default function SessionDetails() {
         );
     };
 
+    const leaveTemplate = (rowData) => {
+        return (
+            rowData.workerHasPendingLeave ? <Tag value="YES" severity="danger" icon="pi pi-check" rounded/> : <Tag value="NO" severity="success" icon="pi pi-times" rounded/>
+        );
+    };
+
     return (
         <div className="container m-auto p-4">
             <Card title={`Details for Session ${id}`} className="m-5 p-4 shadow-lg rounded-lg">
@@ -331,6 +337,7 @@ export default function SessionDetails() {
                                         {rowData.workerPhone}
                                     </a>
                                 )} style={{ color: "black", backgroundColor: "white" }} />
+                                <Column field="workerHasPendingLeave" header="Pending Leave" style={{ color: "black", backgroundColor: "white" }} body={leaveTemplate}/>
                                 <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                                 <Column body={unassignButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
                             </DataTable>
