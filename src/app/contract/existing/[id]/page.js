@@ -124,11 +124,11 @@ export default function ContractDetails() {
     const stageTagTemplate = (rowData) => {
         switch (rowData.planningStage) {
             case "GREEN":
-                return <Tag value="Confirmed" severity="success" />;
+                return <Tag value="CONFIRMED" severity="success" />;
             case "EMBER":
-                return <Tag value="Partial" severity="warning" />;
+                return <Tag value="PARTIAL" severity="warning" />;
             case "RED":
-                return <Tag value="Vacant" severity="danger" />;
+                return <Tag value="VACANT" severity="danger" />;
         }
     }
 

@@ -70,11 +70,11 @@ export default function WorkerContracts() {
     const tagTemplate = (rowData) => {
         switch (rowData.contractStatus) {
             case "COMPLETED":
-                return <Tag value="Completed" severity="success" />;
+                return <Tag value="COMPLETED" severity="success" />;
             case "IN_PROGRESS":
-                return <Tag value="Ongoing" severity="warning" />;
+                return <Tag value="ONGOING" severity="warning" />;
             case "NOT_STARTED":
-                return <Tag value="Not Started" severity="danger" />;
+                return <Tag value="NOT STARTED" severity="danger" />;
         }
     };
 
