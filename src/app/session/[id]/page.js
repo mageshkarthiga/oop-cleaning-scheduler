@@ -45,7 +45,6 @@ export default function SessionDetails() {
 
                 if (foundSession.planningStage === "EMBER" || foundSession.planningStage === "RED") {
                     setNeedWorkers(true);
-                    getAdditionalWorkers(foundSession.cleaningSessionId);
                 }
 
                 const allWorkers = foundSession.shifts
@@ -54,6 +53,9 @@ export default function SessionDetails() {
                             return { workerName: shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId };
                         } else {
                             console.log("Shift worker is null or undefined");
+                            getAdditionalWorkers(shift.shiftId);
+                            setUnassignedShiftId(shift.shiftId);
+                            setShowAvailableWorkers(true);
                             return null;
                         }
                     }).filter(worker => worker !== null)
@@ -80,8 +82,9 @@ export default function SessionDetails() {
 
     const getAdditionalWorkers = async (shiftId) => {
         try {
-            // const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
-            // setAvailableWorker(response.data);
+            const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
+            console.log(response.data);
+            setAvailableWorker(response.data);
         } catch (error) {
             console.error("Error getting workers:", error);
             setError('Failed to retrieve workers. Please try again later.');
@@ -322,19 +325,25 @@ export default function SessionDetails() {
                         {showAvailableWorkers && (
                             <>
                                 <p className="font-semibold mt-4">Available Workers:</p>
-                                <select
-                                    value={selectedWorker}
-                                    onChange={(e) => setSelectedWorker(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mb-4"
-                                >
-                                    <option value="" disabled>Select a worker</option>
-                                    {availableWorker.map((worker, index) => (
-                                        <option key={index} value={worker.id}>
-                                            {worker.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <Button label="Reassign Worker" className="mt-2" onClick={reassignWorker} />
+                                {availableWorker.length > 0 ? (
+                                    <select
+                                        value={selectedWorker}
+                                        onChange={(e) => setSelectedWorker(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mb-4"
+                                    >
+                                        <option value="" disabled>Select a worker</option>
+                                        {availableWorker.map((worker, index) => (
+                                            <option key={index} value={worker.workerId}>
+                                                {`${worker.workerName} - ${Math.ceil(worker.tripDurationSeconds / 60)} minutes away`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p>No available workers to take on the shift.</p>
+                                )}
+                                {availableWorker.length > 0 && (
+                                    <Button label="Reassign Worker" className="mt-2" onClick={reassignWorker} />
+                                )}
                             </>
                         )}
                     </div>
