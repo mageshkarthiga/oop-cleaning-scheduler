@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import axios from 'axios';
+import { Toast } from 'primereact/toast';
 
 export default function CreateContractForm() {
-    const [selectedPackage, setSelectedPackage] = useState('');
     const [selectedClient, setSelectedClient] = useState('');
     const [selectedProperty, setSelectedProperty] = useState('');
     const [selectedFrequency, setSelectedFrequency] = useState('');
@@ -14,21 +15,19 @@ export default function CreateContractForm() {
     const [error, setError] = useState('');
     const [propertyType, setPropertyType] = useState('');
     const [numberOfRooms, setNumberOfRooms] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const [clientsWithProperties, setClientsWithProperties] = useState([]);
     const [filteredProperties, setFilteredProperties] = useState([]);
-    const [roomOptions, setRoomOptions] = useState([]);
-    const [frequency] = useState(['Weekly', 'Bi-Weekly']);
+    const [frequency] = useState(['WEEKLY', 'BIWEEKLY']);
 
-    const propertyTypes = {
-        HDB: ['3-Room', '4-Room'],
-        CONDOMINIUM: ['2-Room and Below', '3-Room']
-    };
+    const startTimes = ['09:00', '13:00', '18:00'];
+    const toast = useRef(null);
+    const router = useRouter();
 
     const today = new Date();
     const minDate = today.toISOString().split('T')[0];
     today.setHours(today.getHours());
-    const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
 
     // Fetch clients and their properties
     const fetchClientsWithProperties = async () => {
@@ -61,11 +60,11 @@ export default function CreateContractForm() {
     };
 
     const handlePropertyChange = (e) => {
-        const selectedPropertyAddress = e.target.value;
-        setSelectedProperty(selectedPropertyAddress);
+        const clientSiteId = e.target.value;
+        setSelectedProperty(clientSiteId);
 
-        // Auto-select property type and number of rooms based on selected address
-        const property = filteredProperties.find(property => property.streetAddress === selectedPropertyAddress);
+        // Auto-select property type and number of rooms based on selected clientSiteId
+        const property = filteredProperties.find(property => property.clientSiteId === parseInt(clientSiteId));
         if (property) {
             setPropertyType(property.propertyType);
             setNumberOfRooms(property.numberOfRooms.toString());
@@ -74,7 +73,7 @@ export default function CreateContractForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedClient || !selectedPackage || !selectedProperty || !startDate || !endDate || !startTime) {
+        if (!selectedClient || !selectedProperty || !startDate || !endDate || !startTime || !selectedFrequency) {
             setError('Please select a client, package type, property, and provide contract duration.');
             return;
         }
@@ -84,35 +83,45 @@ export default function CreateContractForm() {
             setError('Start date must be before the end date.');
             return;
         }
+        setLoading(true);
 
         // Prepare data for submission
         const formData = {
-            client: selectedClient,
-            package: selectedPackage,
-            property: selectedProperty,
+            clientId: parseInt(selectedClient),
+            clientSiteId: parseInt(selectedProperty),
+            contractStartDate: startDate,
+            contractEndDate: endDate,
+            sessionStartTime: startTime,
             frequency: selectedFrequency,
-            startDate,
-            endDate,
-            startTime,
         };
+        console.log(formData, selectedProperty)
 
         try {
-            // const response = await axios.post('https://yourapi.com/leaves', formData);
-            // console.log('Response:', response.data);
-            setStartDate('');
-            setEndDate('');
-            setStartTime('');
-            alert('Contract submitted successfully!');
+            const response = await axios.post('http://localhost:8080/api/v0.1/contract/add-contract/', null,
+                {
+                    params: formData
+                }
+            );
+            console.log('Response:', response.data);
+            if (response.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Contract created successfully!', life: 3000 });
+                // Reset form fields
+            }
+            setLoading(false);
+            router.push('/contract/summary');
         } catch (error) {
             console.error('Error submitting form:', error);
+            setLoading(false);
             setError('Failed to submit the application. Please try again.');
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to create contract. Please try again.', life: 3000 });
         }
     };
 
     return (
         <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
+            <Toast ref={toast} />
             <div className="space-y-6">
-                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Create Contract For Existing Client</h2>
+                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Create Contract For Client</h2>
 
                 <div className='flex items-center gap-4'>
                     <div className="w-1/2">
@@ -147,9 +156,9 @@ export default function CreateContractForm() {
                                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                             >
                                 <option value="" disabled>Select Existing Property</option>
-                                {filteredProperties.map((property, index) => (
-                                    <option key={index} value={property.streetAddress}>
-                                        {`${property.streetAddress}, ${property.postalCode}`}
+                                {filteredProperties.map((property) => (
+                                    <option key={property.clientSiteId} value={property.clientSiteId}>
+                                        {`${property.unitNumber}, ${property.streetAddress}, Singapore ${property.postalCode}`}
                                     </option>
                                 ))}
                             </select>
@@ -234,14 +243,19 @@ export default function CreateContractForm() {
                                 />
                             </div>
                             <div className="w-1/2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                                <input
-                                    type="time"
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Start Time</label>
+                                <select
                                     value={startTime}
-                                    min={minTime}
                                     onChange={(e) => setStartTime(e.target.value)}
                                     className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                >
+                                    <option value="" disabled>Select Start Time</option>
+                                    {startTimes.map((time) => (
+                                        <option key={time} value={time}>
+                                            {time}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -251,6 +265,7 @@ export default function CreateContractForm() {
                     type="submit"
                     label="Create Contract"
                     className="mt-6 p-button-primary"
+                    loading={loading}
                 />
                 {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>

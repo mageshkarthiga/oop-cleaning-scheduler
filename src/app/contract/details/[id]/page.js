@@ -25,6 +25,7 @@ export default function ContractDetails() {
 
     const toast = useRef(null);
     const minDate = new Date().toISOString().split('T')[0];
+    const startTimes = ['09:00', '13:00', '18:00'];
 
     useEffect(() => {
         const fetchContractData = async () => {
@@ -39,7 +40,7 @@ export default function ContractDetails() {
                         setStartDate(contractData.contractStart || "");
                         setEndDate(contractData.contractEnd || "");
                         setStartTime(contractData.sessionStartTime || "");
-                        setLoading(false); 
+                        setLoading(false);
                     } else {
                         setError("Contract not found.");
                     }
@@ -57,9 +58,12 @@ export default function ContractDetails() {
 
     const updateContractDetails = async () => {
         try {
+            // Ensure startTime is formatted as HH:MM:SS
+            const formattedStartTime = `${startTime}:00`;
+
             const updatedContract = {
                 ...contract,
-                contractStart: startDate ? `${startDate}T${startTime}:00.000Z` : contract.contractStart,
+                contractStart: startDate ? `${startDate}T${formattedStartTime}.000Z` : contract.contractStart,
                 contractEnd: endDate ? `${endDate}T23:59:59.000Z` : contract.contractEnd
             };
             console.log(updatedContract);
@@ -212,12 +216,18 @@ export default function ContractDetails() {
                         </div>
                         <div>
                             <strong>Preferred Start Time:</strong>&nbsp;
-                            <input
-                                type="time"
+                            <select
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                                className="w-3/4 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="" disabled>Select Start Time</option>
+                                {startTimes.map((time) => (
+                                    <option key={time} value={time}>
+                                        {time}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                     <div className='flex flex-row space-x-4'>

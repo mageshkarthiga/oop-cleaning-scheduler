@@ -8,7 +8,7 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     return (
-        <header className="bg-white">
+        <header className="bg-white mb-10">
             <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
                 <div className="flex lg:flex-1">
                     <a href="#" className="-m-1.5 p-1.5">
@@ -16,7 +16,7 @@ export default function Navbar() {
                         <img
                             alt=""
                             src="https://i0.wp.com/homecleaningsg.com/wp-content/uploads/2022/12/header-logo.webp?fit=249%2C47&ssl=1"
-                            className="h-8 w-auto"
+                            className="h-10 w-auto"
                         />
                     </a>
                 </div>
@@ -31,10 +31,10 @@ export default function Navbar() {
                     </button>
                 </div>
                 <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-                    <Link href="/contract/summary" className="text-sm font-semibold leading-6 text-gray-900">Contracts</Link>
-                    <Link href="/calendar/admin" className="text-sm font-semibold leading-6 text-gray-900">Calendar</Link>
-                    <Link href="/client/summary" className="text-sm font-semibold leading-6 text-gray-900">Clients</Link>
-                    <Link href="/leave/admin" className="text-sm font-semibold leading-6 text-gray-900">Leave Approval</Link>
+                    <Link href="/contract/summary" className="font-semibold leading-6 text-gray-900">Contracts</Link>
+                    <Link href="/calendar/admin" className="font-semibold leading-6 text-gray-900">Calendar</Link>
+                    <Link href="/client/summary" className="font-semibold leading-6 text-gray-900">Clients</Link>
+                    <Link href="/leave/admin" className="font-semibold leading-6 text-gray-900">Leave Approval</Link>
                 </PopoverGroup>
             </nav>
         </header>

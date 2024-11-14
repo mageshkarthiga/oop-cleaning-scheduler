@@ -3,86 +3,39 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import { TabView, TabPanel } from 'primereact/tabview';
 import { Toast } from 'primereact/toast';
 import axios from 'axios';
-
-const mockApiCall = () => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve([
-                {
-                    workerId: 1,
-                    workerName: "Karthiga",
-                    leaveType: "medical",
-                    dateSubmitted: "2024-10-19T00:00:00",
-                    applicationStatus: "pending"
-                },
-                {
-                    workerId: 2,
-                    workerName: "John Doe",
-                    leaveType: "annual",
-                    dateSubmitted: "2024-10-20T00:00:00",
-                    applicationStatus: "approved"
-                },
-                {
-                    workerId: 3,
-                    workerName: "Alice Smith",
-                    leaveType: "medical",
-                    dateSubmitted: "2024-10-18T00:00:00",
-                    applicationStatus: "rejected"
-                },
-                {
-                    workerId: 4,
-                    workerName: "Bob Johnson",
-                    leaveType: "annual",
-                    dateSubmitted: "2024-10-21T00:00:00",
-                    applicationStatus: "pending"
-                },
-                {
-                    workerId: 5,
-                    workerName: "Charlie Brown",
-                    leaveType: "medical",
-                    dateSubmitted: "2024-10-19T00:00:00",
-                    applicationStatus: "approved"
-                },
-                {
-                    workerId: 6,
-                    workerName: "Diana Prince",
-                    leaveType: "annual",
-                    dateSubmitted: "2024-10-22T00:00:00",
-                    applicationStatus: "pending"
-                }
-            ]);
-        }, 2000);
-    });
-};
 
 export default function Leave() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
-    useEffect(() => {
-        const adminId = 8;
-        const fetchData = async () => {
-            // const data = await axios.get(`http://localhost:8080/api/v0.1/leave-applications/${adminId}/get-pending-leave-applications/`);
-            const data = await mockApiCall();
-            setApplications(data);
-            setLoading(false);
-        };
+    const adminId = 1;
 
+    const fetchData = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/v0.1/leave-applications/${adminId}/get-pending-leave-applications/`);
+            console.log(response.data);
+            setApplications(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
     const handleApprove = async (rowData) => {
         try {
-            const response = await axios.put(`http://localhost:8080/api/v0.1/leave-applications/${rowData.workerId}/approve`);
-            if (response.status === 200) {
-                console.log(`Approved application for ${rowData.workerName}`);
+            const response = await axios.put(`http://localhost:8080/api/v0.1/admins/approve-leave-application/${rowData.leaveApplicationId}`);
+            if (response.status === 202) {
                 updateApplicationStatus(rowData.workerId, "approved");
                 toast.current.show({ severity: 'success', summary: 'Success', detail: `Approved application for ${rowData.workerName}`, life: 3000 });
+                fetchData();
             }
         } catch (error) {
             console.error('Error approving application:', error);
@@ -92,11 +45,11 @@ export default function Leave() {
 
     const handleReject = async (rowData) => {
         try {
-            const response = await axios.put(`http://localhost:8080//api/v0.1/admins/reject-leave-application/`);
-            if (response.status === 200) {
-                console.log(`Rejected application for ${rowData.workerName}`);
+            const response = await axios.put(`http://localhost:8080/api/v0.1/admins/reject-leave-application/${rowData.leaveApplicationId}`);
+            if (response.status === 202) {
                 updateApplicationStatus(rowData.workerId, "rejected");
                 toast.current.show({ severity: 'success', summary: 'Success', detail: `Rejected application for ${rowData.workerName}`, life: 3000 });
+                fetchData();
             }
         } catch (error) {
             console.error('Error rejecting application:', error);
@@ -114,54 +67,38 @@ export default function Leave() {
     const actionTemplate = (rowData) => {
         return (
             <div className="flex gap-2">
-                <Button label="Approve &nbsp;" severity="success" onClick={() => handleApprove(rowData)} icon="pi pi-check" iconPos='right'/>
-                <Button label="Reject &nbsp;" severity="danger" onClick={() => handleReject(rowData)} icon="pi pi-times" iconPos='right'/>
+                <Button label="Approve &nbsp;" severity="success" onClick={() => handleApprove(rowData)} icon="pi pi-check" iconPos='right' />
+                <Button label="Reject &nbsp;" severity="danger" onClick={() => handleReject(rowData)} icon="pi pi-times" iconPos='right' />
             </div>
         );
     };
 
-    const statusBodyTemplate = (application) => {
-        return <Tag value={application.applicationStatus.toUpperCase()} severity={getSeverity(application)}></Tag>;
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-GB', {
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
     };
 
-    const getSeverity = (application) => {
-        switch (application.applicationStatus) {
-            case 'approved':
-                return 'success';
-            case 'pending':
-                return 'warning';
-            case 'rejected':
-                return 'danger';
-            default:
-                return null;
-        }
+    const dateBodyTemplate = (rowData, field) => {
+        return formatDate(rowData[field]);
     };
 
     return (
         <div>
             <Toast ref={toast} />
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10">Leave Applications</h1>
-            <br />
-            <div className='card m-4 border-4'>
-                <TabView>
-                    <TabPanel header="Pending Applications" rightIcon="pi pi-calendar-clock ml-2" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-                        <DataTable value={applications.filter(app => app.applicationStatus === "pending")} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
-                            <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column field="dateSubmitted" header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}></Column>
-                        </DataTable>
-                    </TabPanel>
-                    <TabPanel header="History" rightIcon="pi pi-history ml-2" className="text-black hover:text-blue-500 active:text-blue-700 transition duration-200">
-                        <DataTable value={applications.filter(app => app.applicationStatus !== "pending")} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
-                            <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column field="leaveType" header="Leave Type" style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column field="dateSubmitted" header="Date Submitted" sortable style={{ color: "black", backgroundColor: "white" }}></Column>
-                            <Column header="Status" body={statusBodyTemplate} style={{ color: "black", backgroundColor: "white" }}></Column>
-                        </DataTable>
-                    </TabPanel>
-                </TabView>
+            <div className='container mx-auto p-4 card border-4'>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Leave Applications</h2>
+                <DataTable value={applications} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
+                    <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white" }}></Column>
+                    <Column field="workerPhoneNumber" header="Worker Phone Number" style={{ color: "black", backgroundColor: "white" }}></Column>
+                    <Column field="leaveStartDate" header="Leave Start Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveStartDate")}></Column>
+                    <Column field="leaveEndDate" header="Leave End Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveEndDate")}></Column>
+                    <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}></Column>
+                </DataTable>
             </div>
         </div>
     )

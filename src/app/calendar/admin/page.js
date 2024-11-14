@@ -39,8 +39,8 @@ export default function CalendarView() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10 mb-4">Calendar</h1>
-            <div className="container border-4 mx-auto p-4">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-20 mb-4">Calendar</h1>
+            <div className="container mx-auto p-4 card border-4">
                 <FullCalendar
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"

@@ -121,7 +121,7 @@ export default function CreateClientForm() {
             console.log('Response:', response);
             if (response.status == 202) {
                 toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client created!', life: 4000 });
-                // router.push('/contract/form');
+                router.push('/contract/form');
             }
 
         } catch (error) {
@@ -239,10 +239,8 @@ export default function CreateClientForm() {
                 {error && <p className="text-red-500 mt-2">{error}</p>}
                 <Button
                     type="submit"
-                    label="Add Client &nbsp;"
+                    label="Add Client"
                     className="mt-6 p-button-primary"
-                    icon="pi pi-plus-circle"
-                    iconPos='right'
                 />
             </div>
             <Toast ref={toast} position="top-right" />

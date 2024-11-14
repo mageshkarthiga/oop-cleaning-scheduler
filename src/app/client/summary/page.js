@@ -87,7 +87,7 @@ export default function ClientSummary() {
             <DataTable value={clients} paginator rows={5} loading={loading} sortField='name' sortOrder={1}>
                 <Column field="name" header="Client Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} sortable />
                 <Column field="phone" header="Client Phone No." style={{ color: "black", backgroundColor: "white" }} />
-                <Column header="Street Address" body={addressTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                <Column header="Residential Address" body={addressTemplate} style={{ color: "black", backgroundColor: "white" }} />
                 <Column header="Latest Contract Start Date" body={contractStartDateTemplate} style={{ color: "black", backgroundColor: "white" }} />
                 <Column header="Actions" body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
             </DataTable>

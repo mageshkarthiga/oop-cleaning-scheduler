@@ -204,7 +204,8 @@ export default function SessionDetails() {
     const assignWorker = async (workerId) => {
         try {
             const response = await axios.post(`http://localhost:8080/api/v0.1/shift/${unassignedShiftId}/assign-worker/${workerId}`);
-            if (response.status === 202) {
+            console.log(response);
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 4000 });
                 setShowAvailableWorkers(false);
                 // Refresh the session data
