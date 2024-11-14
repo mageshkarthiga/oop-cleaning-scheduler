@@ -24,6 +24,10 @@ export default function SessionDetails() {
     const [startTime, setStartTime] = useState('');
     const [endDate, setEndDate] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [initialStartDate, setInitialStartDate] = useState('');
+    const [initialStartTime, setInitialStartTime] = useState('');
+    const [initialEndDate, setInitialEndDate] = useState('');
+    const [initialEndTime, setInitialEndTime] = useState('');
     const [dialogVisible, setDialogVisible] = useState(false);
     const [showAvailableWorkers, setShowAvailableWorkers] = useState(false);
     const [unassignedShiftId, setUnassignedShiftId] = useState(null);
@@ -68,6 +72,10 @@ export default function SessionDetails() {
                 setStartTime(foundSession.sessionStartTime);
                 setEndDate(foundSession.sessionEndDate);
                 setEndTime(foundSession.sessionEndTime);
+                setInitialStartDate(foundSession.sessionStartDate);
+                setInitialStartTime(foundSession.sessionStartTime);
+                setInitialEndDate(foundSession.sessionEndDate);
+                setInitialEndTime(foundSession.sessionEndTime);
 
                 setLoading(false);
             } catch (error) {
@@ -185,7 +193,7 @@ export default function SessionDetails() {
         }
     };
 
-    const reassignWorker = async () => {
+    const assignWorker = async () => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/assign-worker/${unassignedShiftId}`, {
                 workerId: selectedWorker
@@ -240,6 +248,14 @@ export default function SessionDetails() {
             </div>
         )
 
+    const isDateTimeModified = () => {
+        return (
+            startDate !== initialStartDate ||
+            startTime !== initialStartTime ||
+            endDate !== initialEndDate ||
+            endTime !== initialEndTime
+        );
+    };
 
     return (
         <div className="container m-auto p-4">
@@ -296,7 +312,7 @@ export default function SessionDetails() {
                             <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
                         </p>
                         <div className='flex flex-row space-x-4'>
-                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()} />
+                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()} disabled={!isDateTimeModified()} />
                             <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => setDialogVisible(true)} />
                         </div>
                     </div>
@@ -342,7 +358,7 @@ export default function SessionDetails() {
                                     <p>No available workers to take on the shift.</p>
                                 )}
                                 {availableWorker.length > 0 && (
-                                    <Button label="Reassign Worker" className="mt-2" onClick={reassignWorker} />
+                                    <Button label="Assign Worker" className="mt-2" onClick={assignWorker} />
                                 )}
                             </>
                         )}

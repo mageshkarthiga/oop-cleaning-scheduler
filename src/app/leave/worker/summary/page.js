@@ -85,7 +85,7 @@ export default function Leave() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold tracking-tight underline text-gray-900 mx-10">Leave Applications</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mx-10">Leave Applications</h1>
             <br />
             <div className="card mx-10">
                 <h2 className="text-xl font-semibold">Leave Days Left</h2>

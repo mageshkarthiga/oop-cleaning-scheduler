@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button } from 'primereact/button';
+import axios from 'axios';
+import { ProgressSpinner } from "primereact/progressspinner";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import axios from 'axios';
 
 export default function CalendarView() {
     const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         async function fetchEvents() {
             try {
@@ -14,7 +15,7 @@ export default function CalendarView() {
                 const data = response.data;
                 const formattedEvents = data.map(cleaningSession => ({
                     id: cleaningSession.cleaningSessionId.toString(),
-                    title: `Session for ${cleaningSession.clientName.split(' ')[0]} ${cleaningSession.clientName.split(' ')[1].charAt(0)}.`,
+                    title: `Session - ${cleaningSession.clientName.split(' ')[0]} ${cleaningSession.clientName.split(' ')[1].charAt(0)}.`,
                     start: `${cleaningSession.sessionStartDate}T${cleaningSession.sessionStartTime}`,
                     end: `${cleaningSession.sessionEndDate}T${cleaningSession.sessionEndTime}`,
                     backgroundColor: cleaningSession.planningStage === "EMBER" 
@@ -25,6 +26,7 @@ export default function CalendarView() {
                     url: `/session/${cleaningSession.cleaningSessionId}`
                 }));
                 setEvents(formattedEvents);
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching events:", error);
             }
@@ -32,6 +34,8 @@ export default function CalendarView() {
 
         fetchEvents();
     }, []);
+
+    if (loading) return <ProgressSpinner className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50' />;
 
     return (
         <div>
