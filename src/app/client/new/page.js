@@ -13,6 +13,7 @@ export default function CreateClientForm() {
     const [clientName, setClientName] = useState('');
     const [clientPhoneNumber, setClientPhoneNumber] = useState('');
     const [unitNumber, setUnitNumber] = useState('');
+    const [loading, setLoading] = useState(false);
     const propertyTypes = {
         HDB: ['3-Room', '4-Room'],
         CONDOMINIUM: ['2-Room and Below', '3-Room']
@@ -102,7 +103,7 @@ export default function CreateClientForm() {
         setError('');
 
         // Prepare data for submission
-        const formData = {
+        const clientData = {
             name: clientName,
             phone: clientPhoneNumber,
             homeAddress: place.name,
@@ -111,22 +112,58 @@ export default function CreateClientForm() {
             numberOfRooms: parseInt(selectedNoOfRooms.split('-')[0]),
             propertyType: selectedPropertyType
         };
+        setLoading(true);
         try {
-            // Make API call to submit the form data
-            const response = await axios.post('http://localhost:8080/api/v0.1/client/add-client/', null,
+            // Make API call to create the client
+            const clientResponse = await axios.post('http://localhost:8080/api/v0.1/client/add-client/', null,
                 {
-                    params: formData
+                    params: clientData
                 }
             );
-            console.log('Response:', response);
-            if (response.status == 202) {
-                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client created!', life: 4000 });
-                router.push('/contract/form');
-            }
+            console.log('Client Response:', clientResponse);
 
+            if (clientResponse.status === 202) {
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client created!', life: 4000 });
+
+                // Search for the client by name to get the clientId
+                const searchResponse = await axios.get(`http://localhost:8080/api/v0.1/client/${clientName}`);
+                console.log('Search Response:', searchResponse);
+
+                if (searchResponse.status === 200) {
+                    const clientId = searchResponse.data.clientId;
+
+                    // Prepare data for client site creation
+                    const clientSiteData = {
+                        clientId: clientId,
+                        streetAddress: place.name,
+                        postalCode: postalCode,
+                        unitNumber: unitNumber,
+                    };
+
+                    // Make API call to add the client site
+                    const clientSiteResponse = await axios.post(`http://localhost:8080/api/v0.1/client/${clientId}/add-client-site/`, null,
+                        {
+                            params: clientSiteData
+                        }
+                    );
+                    console.log('Client Site Response:', clientSiteResponse);
+
+                    if (clientSiteResponse.status === 202) {
+                        toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client and client site created successfully!', life: 4000 });
+                        setLoading(false);
+
+                        // Delay the router.push call
+                        setTimeout(() => {
+                            router.push('/client/summary');
+                        }, 3000); // 3 seconds delay
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error submitting form:', error);
+            setLoading(false);
             setError('Failed to submit the application. Please try again.');
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to create client and client site. Please try again.', life: 4000 });
         }
     };
 
@@ -241,6 +278,7 @@ export default function CreateClientForm() {
                     type="submit"
                     label="Add Client"
                     className="mt-6 p-button-primary"
+                    loading={loading}
                 />
             </div>
             <Toast ref={toast} position="top-right" />

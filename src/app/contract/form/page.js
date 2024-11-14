@@ -104,16 +104,19 @@ export default function CreateContractForm() {
             );
             console.log('Response:', response.data);
             if (response.status === 202) {
-                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Contract created successfully!', life: 3000 });
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Contract created successfully!', life: 7000 });
                 // Reset form fields
             }
             setLoading(false);
-            router.push('/contract/summary');
+            // Delay the router.push call
+            setTimeout(() => {
+                router.push('/contract/summary');
+            }, 6000);
         } catch (error) {
             console.error('Error submitting form:', error);
             setLoading(false);
             setError('Failed to submit the application. Please try again.');
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to create contract. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to create contract. Please try again.', life: 4000 });
         }
     };
 

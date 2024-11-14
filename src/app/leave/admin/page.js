@@ -34,12 +34,12 @@ export default function Leave() {
             const response = await axios.put(`http://localhost:8080/api/v0.1/admins/approve-leave-application/${rowData.leaveApplicationId}`);
             if (response.status === 202) {
                 updateApplicationStatus(rowData.workerId, "approved");
-                toast.current.show({ severity: 'success', summary: 'Success', detail: `Approved application for ${rowData.workerName}`, life: 3000 });
+                toast.current.show({ severity: 'success', summary: 'Success', detail: `Approved application for ${rowData.workerName}`, life: 4000 });
                 fetchData();
             }
         } catch (error) {
             console.error('Error approving application:', error);
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to approve application. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to approve application. Please try again.', life: 4000 });
         }
     };
 
@@ -48,12 +48,12 @@ export default function Leave() {
             const response = await axios.put(`http://localhost:8080/api/v0.1/admins/reject-leave-application/${rowData.leaveApplicationId}`);
             if (response.status === 202) {
                 updateApplicationStatus(rowData.workerId, "rejected");
-                toast.current.show({ severity: 'success', summary: 'Success', detail: `Rejected application for ${rowData.workerName}`, life: 3000 });
+                toast.current.show({ severity: 'success', summary: 'Success', detail: `Rejected application for ${rowData.workerName}`, life: 4000 });
                 fetchData();
             }
         } catch (error) {
             console.error('Error rejecting application:', error);
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to reject application. Please try again.', life: 3000 });
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to reject application. Please try again.', life: 4000 });
         }
     };
 
@@ -93,7 +93,7 @@ export default function Leave() {
             <div className='container mx-auto p-4 card border-4'>
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Leave Applications</h2>
                 <DataTable value={applications} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
-                    <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white" }}></Column>
+                    <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}></Column>
                     <Column field="workerPhoneNumber" header="Worker Phone Number" style={{ color: "black", backgroundColor: "white" }}></Column>
                     <Column field="leaveStartDate" header="Leave Start Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveStartDate")}></Column>
                     <Column field="leaveEndDate" header="Leave End Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveEndDate")}></Column>

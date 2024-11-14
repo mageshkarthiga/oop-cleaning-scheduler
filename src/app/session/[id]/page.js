@@ -32,6 +32,7 @@ export default function SessionDetails() {
     const [dialogVisible, setDialogVisible] = useState(false);
     const [showAvailableWorkers, setShowAvailableWorkers] = useState(false);
     const [unassignedShiftId, setUnassignedShiftId] = useState(null);
+    const [buttonLoading, setButtonLoading] = useState(false);
     const router = useRouter();
     const toast = useRef(null);
 
@@ -203,12 +204,13 @@ export default function SessionDetails() {
 
     const assignWorker = async (workerId) => {
         try {
+            setButtonLoading(true);
             const response = await axios.post(`http://localhost:8080/api/v0.1/shift/${unassignedShiftId}/assign-worker/${workerId}`);
             console.log(response);
             if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 4000 });
+                setButtonLoading(false);
                 setShowAvailableWorkers(false);
-                // Refresh the session data
                 fetchSessionData();
             }
         } catch (error) {
@@ -375,7 +377,7 @@ export default function SessionDetails() {
                                                 </option>
                                             ))}
                                         </select>
-                                        <Button label="Assign Worker" className="mt-2" onClick={() => assignWorker(selectedWorker)} />
+                                        <Button label="Assign Worker" className="mt-2" onClick={() => assignWorker(selectedWorker)} loading={buttonLoading}/>
                                     </>
                                 ) : (
                                     <p>No available workers to take on the shift.</p>
