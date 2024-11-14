@@ -87,19 +87,10 @@ export default function DetailsPage() {
             try {
                 const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
                 const data = response.data;
-                data.workerLocation = {
-                    "locationId": 1,
-                    "address": "88 Corporation Road",
-                    "postalCode": "649823",
-                    "unitNumber": "#11-25",
-                    "latitude": 1.29908744640975,
-                    "longitude": 103.881565630968,
-                    "subzone": null
-                };
                 console.log(data)
 
-                setOrigin(`${data.workerLocation.latitude},${data.workerLocation.longitude}`);
-                setDestination(`${data.latitude},${data.longitude}`);
+                setOrigin(`${data.workerLocationBeforeShift.latitude},${data.workerLocationBeforeShift.longitude}`);
+                setDestination(`${data.clientLocation.latitude},${data.clientLocation.longitude}`);
                 setShift(data);
                 setLoading(false);
             } catch (error) {
@@ -161,7 +152,7 @@ export default function DetailsPage() {
     
 
     const getSeverity = (shift) => {
-        switch (shift.workingStatus) {
+        switch (shift.sessionStatus) {
             case 'NOT_STARTED':
                 return 'danger';
             case 'WORKING':
@@ -215,7 +206,7 @@ export default function DetailsPage() {
                         <p>{shift.clientAddress}</p> 
     
                         <p className="font-semibold mt-4">Status:
-                            <Tag value={shift.workingStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
+                            <Tag value={shift.sessionStatus.replace(/_/g, ' ')} severity={getSeverity(shift)} />
                         </p>
     
                         <div className='mt-4 mb-5'>
@@ -257,7 +248,7 @@ export default function DetailsPage() {
                     {/* Column for the map */}
                     <div className='ml-4' style={{ flex: '0 0 600px' }}>
                         <Map
-                            defaultCenter={{ lat: shift.workerLocation.latitude || 0, lng: shift.workerLocation.longitude || 0 }}
+                            defaultCenter={{ lat: shift.workerLocationBeforeShift.latitude || 0, lng: shift.workerLocationBeforeShift.longitude || 0 }}
                             defaultZoom={9}
                             gestureHandling="greedy"
                             fullscreenControl={false}

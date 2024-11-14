@@ -19,6 +19,7 @@ export default function SessionDetails() {
     const [workers, setWorkers] = useState([]);
     const [selectedWorker, setSelectedWorker] = useState('');
     const [availableWorker, setAvailableWorker] = useState([]);
+    const [loadingAvailableWorkers, setLoadingAvailableWorkers] = useState(false);
     const [needWorkers, setNeedWorkers] = useState(false);
     const [startDate, setStartDate] = useState('');
     const [startTime, setStartTime] = useState('');
@@ -34,68 +35,71 @@ export default function SessionDetails() {
     const router = useRouter();
     const toast = useRef(null);
 
-    useEffect(() => {
-        const fetchSessionData = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`);
-                const foundSession = response.data;
-                console.log(foundSession);
+    const fetchSessionData = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/v0.1/cleaningSession/calendar-card/${id}`);
+            const foundSession = response.data;
+            console.log(foundSession);
 
-                if (!foundSession) {
-                    setError('Session not found');
-                    setLoading(false);
-                    return;
-                }
-
-                if (foundSession.planningStage === "EMBER" || foundSession.planningStage === "RED") {
-                    setNeedWorkers(true);
-                }
-
-                const allWorkers = foundSession.shifts
-                    ? foundSession.shifts.map(shift => {
-                        if (shift.workerName) {
-                            return { workerName: shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId };
-                        } else {
-                            console.log("Shift worker is null or undefined");
-                            getAdditionalWorkers(shift.shiftId);
-                            setUnassignedShiftId(shift.shiftId);
-                            setShowAvailableWorkers(true);
-                            return null;
-                        }
-                    }).filter(worker => worker !== null)
-                    : [];
-                setWorkers(allWorkers);
-
-                // Set initial session and date-time states
-                setSession(foundSession);
-                setStartDate(foundSession.sessionStartDate);
-                setStartTime(foundSession.sessionStartTime);
-                setEndDate(foundSession.sessionEndDate);
-                setEndTime(foundSession.sessionEndTime);
-                setInitialStartDate(foundSession.sessionStartDate);
-                setInitialStartTime(foundSession.sessionStartTime);
-                setInitialEndDate(foundSession.sessionEndDate);
-                setInitialEndTime(foundSession.sessionEndTime);
-
+            if (!foundSession) {
+                setError('Session not found');
                 setLoading(false);
-            } catch (error) {
-                console.error("Error fetching details:", error);
-                setError('Failed to load session details. Please try again later.');
-                setLoading(false);
+                return;
             }
-        };
 
+            if (foundSession.planningStage === "EMBER" || foundSession.planningStage === "RED") {
+                setNeedWorkers(true);
+            }
+
+            const allWorkers = foundSession.shifts
+                ? foundSession.shifts.map(shift => {
+                    if (shift.workerName) {
+                        return { workerName: shift.workerName, workerPhone: shift.workerPhone, shiftId: shift.shiftId };
+                    } else {
+                        console.log("Shift worker is null or undefined");
+                        getAdditionalWorkers(shift.shiftId);
+                        setUnassignedShiftId(shift.shiftId);
+                        setShowAvailableWorkers(true);
+                        return null;
+                    }
+                }).filter(worker => worker !== null)
+                : [];
+            setWorkers(allWorkers);
+
+            // Set initial session and date-time states
+            setSession(foundSession);
+            setStartDate(foundSession.sessionStartDate);
+            setStartTime(foundSession.sessionStartTime);
+            setEndDate(foundSession.sessionEndDate);
+            setEndTime(foundSession.sessionEndTime);
+            setInitialStartDate(foundSession.sessionStartDate);
+            setInitialStartTime(foundSession.sessionStartTime);
+            setInitialEndDate(foundSession.sessionEndDate);
+            setInitialEndTime(foundSession.sessionEndTime);
+
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching details:", error);
+            setError('Failed to load session details. Please try again later.');
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchSessionData();
     }, [id]);
 
     const getAdditionalWorkers = async (shiftId) => {
+        setLoadingAvailableWorkers(true);
         try {
             const response = await axios.get(`http://localhost:8080/api/v0.1/shift/${shiftId}/available-workers`);
             console.log(response.data);
             setAvailableWorker(response.data);
+            setLoadingAvailableWorkers(false);
         } catch (error) {
             console.error("Error getting workers:", error);
             setError('Failed to retrieve workers. Please try again later.');
+            setLoadingAvailableWorkers(false);
         }
     };
 
@@ -183,9 +187,8 @@ export default function SessionDetails() {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
             if (response.status === 202) {
                 toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 4000 });
-                // Refresh the workers list
-                const updatedWorkers = workers.filter(worker => worker.shiftId !== shiftId);
-                setWorkers(updatedWorkers);
+                // Refresh the session data
+                fetchSessionData();
             }
         }
         catch (error) {
@@ -193,17 +196,14 @@ export default function SessionDetails() {
         }
     };
 
-    const assignWorker = async () => {
+    const assignWorker = async (workerId) => {
         try {
-            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/assign-worker/${unassignedShiftId}`, {
-                workerId: selectedWorker
-            });
+            const response = await axios.post(`http://localhost:8080/api/v0.1/shift/${unassignedShiftId}/assign-worker/${workerId}`);
             if (response.status === 202) {
                 toast.current.show({ severity: 'success', summary: 'Worker Reassigned', detail: 'Worker reassigned successfully.', life: 4000 });
                 setShowAvailableWorkers(false);
-                // Refresh the workers list
-                const updatedWorkers = [...workers, { workerName: response.data.workerName, workerPhone: response.data.workerPhone, shiftId: unassignedShiftId }];
-                setWorkers(updatedWorkers);
+                // Refresh the session data
+                fetchSessionData();
             }
         } catch (error) {
             toast.current.show({ severity: 'error', summary: 'Reassign Failed', detail: 'Failed to reassign worker. Please try again.', life: 4000 });
@@ -341,24 +341,28 @@ export default function SessionDetails() {
                         {showAvailableWorkers && (
                             <>
                                 <p className="font-semibold mt-4">Available Workers:</p>
-                                {availableWorker.length > 0 ? (
-                                    <select
-                                        value={selectedWorker}
-                                        onChange={(e) => setSelectedWorker(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mb-4"
-                                    >
-                                        <option value="" disabled>Select a worker</option>
-                                        {availableWorker.map((worker, index) => (
-                                            <option key={index} value={worker.workerId}>
-                                                {`${worker.workerName} - ${Math.ceil(worker.tripDurationSeconds / 60)} minutes away`}
-                                            </option>
-                                        ))}
-                                    </select>
+                                {loadingAvailableWorkers ? (
+                                    <div className="flex justify-center items-center h-32">
+                                        <ProgressSpinner />
+                                    </div>
+                                ) : availableWorker.length > 0 ? (
+                                    <>
+                                        <select
+                                            value={selectedWorker}
+                                            onChange={(e) => setSelectedWorker(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent mb-4"
+                                        >
+                                            <option value="" disabled>Select a worker</option>
+                                            {availableWorker.map((worker, index) => (
+                                                <option key={index} value={worker.workerId}>
+                                                    {`${worker.workerName} - ${Math.ceil(worker.tripDurationSeconds / 60)} minutes away`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <Button label="Assign Worker" className="mt-2" onClick={() => assignWorker(selectedWorker)} />
+                                    </>
                                 ) : (
                                     <p>No available workers to take on the shift.</p>
-                                )}
-                                {availableWorker.length > 0 && (
-                                    <Button label="Assign Worker" className="mt-2" onClick={assignWorker} />
                                 )}
                             </>
                         )}
@@ -375,7 +379,7 @@ export default function SessionDetails() {
                 </Dialog>
 
             </Card>
-            <Toast ref={toast} />
+            <Toast ref={toast} position="top-right" />
         </div>
     );
 }
