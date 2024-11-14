@@ -28,30 +28,31 @@ export default function CreateContractForm() {
     const addressInputRef = useRef(null);
     const [postalCode, setPostalCode] = useState('');
 
-    // Load the Google Maps API script dynamically
     const loadGoogleMapsAPI = () => {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-        script.async = true;
-        script.onload = () => {
-            initializeAutocomplete();
-        };
-        script.onerror = () => {
-            console.error('Failed to load Google Maps API');
-            setError('Failed to load Google Maps API. Please try again later.');
-        };
-        document.head.appendChild(script);
+        // Check if the script is already loaded
+        if (!document.querySelector('script[src^="https://maps.googleapis.com/maps/api/js"]')) {
+            // Create the script element
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`;
+            script.async = true;
+            script.defer = true;  // Ensures that the script will not block rendering
+            script.onerror = () => {
+                console.error('Failed to load Google Maps API');
+                setError('Failed to load Google Maps API. Please try again later.');
+            };
+            document.head.appendChild(script);
+        }
     };
-
-    // Initialize Google Maps and Autocomplete
-    const initializeAutocomplete = () => {
+    
+    // This function will be called once the Google Maps API script is loaded
+    window.initializeAutocomplete = () => {
         if (window.google && window.google.maps) {
             const googleMaps = window.google.maps;
             const autocomplete = new googleMaps.places.Autocomplete(addressInputRef.current, {
                 types: ['geocode'],
                 componentRestrictions: { country: 'SG' }
             });
-
+    
             autocomplete.addListener('place_changed', () => {
                 const place = autocomplete.getPlace();
                 if (place.geometry) {
@@ -67,9 +68,10 @@ export default function CreateContractForm() {
             });
         } else {
             // Retry initialization if google.maps is not yet available
-            setTimeout(initializeAutocomplete, 500);
+            setTimeout(window.initializeAutocomplete, 500);
         }
     };
+    
 
     useEffect(() => {
         loadGoogleMapsAPI();
