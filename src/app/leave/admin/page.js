@@ -11,7 +11,7 @@ export default function Leave() {
     const [loading, setLoading] = useState(true);
     const toast = useRef(null);
 
-    const adminId = 1;
+    const adminId = 2;
 
     const fetchData = async () => {
         try {
@@ -92,11 +92,11 @@ export default function Leave() {
             <div className='container mx-auto p-4 card border-4'>
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Leave Applications</h2>
                 <DataTable value={applications} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
-                    <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}></Column>
-                    <Column field="workerPhoneNumber" header="Worker Phone Number" style={{ color: "black", backgroundColor: "white" }}></Column>
-                    <Column field="leaveStartDate" header="Leave Start Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveStartDate")}></Column>
-                    <Column field="leaveEndDate" header="Leave End Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveEndDate")}></Column>
-                    <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}></Column>
+                    <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}/>
+                    <Column field="workerPhoneNumber" header="Worker Phone Number" style={{ color: "black", backgroundColor: "white" }}/>
+                    <Column field="leaveStartDate" header="Leave Start Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveStartDate")}/>
+                    <Column field="leaveEndDate" header="Leave End Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveEndDate")}/>
+                    <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}/>
                 </DataTable>
             </div>
         </div>

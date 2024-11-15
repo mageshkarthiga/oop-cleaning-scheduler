@@ -138,6 +138,8 @@ export default function CreateClientForm() {
                         streetAddress: place.name,
                         postalCode: postalCode,
                         unitNumber: unitNumber,
+                        numberOfRooms: parseInt(selectedNoOfRooms.split('-')[0]),
+                        propertyType: selectedPropertyType
                     };
 
                     // Make API call to add the client site

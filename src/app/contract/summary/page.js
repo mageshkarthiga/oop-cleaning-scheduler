@@ -99,11 +99,11 @@ export default function ContractSummary() {
                 dropdownIcon="pi pi-chevron-down"
             />
             <br /><br />
-            <DataTable value={contracts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={-1}>
-                <Column field="clientName" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} />
+            <DataTable value={contracts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
+                <Column field="clientName" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} sortable/>
                 <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />
-                <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")} />
-                <Column field="frequency" header="Frequency" style={{ color: "black", backgroundColor: "white" }} />
+                <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")} sortable/>
+                <Column field="frequency" header="Frequency" style={{ color: "black", backgroundColor: "white" }} sortable/>
                 <Column field="contractStatus" header="Status" style={{ color: "black", backgroundColor: "white" }} body={tagTemplate} />
                 <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
             </DataTable>

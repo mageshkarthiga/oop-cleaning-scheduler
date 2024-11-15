@@ -42,7 +42,7 @@ export default function CalendarView() {
                     headerToolbar={{
                         left: 'prev,next',
                         center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
                     }}
                     fixedWeekCount={false}
                 />
