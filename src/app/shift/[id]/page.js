@@ -115,7 +115,7 @@ export default function DetailsPage() {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/start-shift/${id}`);
             console.log(response);
-            if (response.status === 202 && response.data.success) {
+            if (response.status === 202) {
                 console.log('Session started successfully', response);
                 setIsSessionStarted(true);
                 setSelectedImage(null);
@@ -136,7 +136,7 @@ export default function DetailsPage() {
         }
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/end-shift/${id}`);
-            if (response.status === 202 && response.data.success) {
+            if (response.status === 202) {
                 console.log('Session ended successfully', response);
                 setIsSessionStarted(false);
                 setIsSessionFinished(true);
@@ -224,21 +224,21 @@ export default function DetailsPage() {
                                     )}
                                     <br />
                                     {!isSessionFinished && shift.sessionStatus !== 'FINISHED' && (
-                                        isSessionStarted ? (
-                                            <Button
-                                                label="End Shift &nbsp;"
-                                                icon="pi pi-times-circle"
-                                                iconPos="right"
-                                                severity="danger"
-                                                onClick={endSession}
-                                            />
-                                        ) : (
+                                        shift.sessionStatus === 'NOT_STARTED' ? (
                                             <Button
                                                 label="Start Shift &nbsp;"
                                                 icon="pi pi-check-circle"
                                                 iconPos="right"
                                                 severity="success"
                                                 onClick={startSession}
+                                            />
+                                        ) : (
+                                            <Button
+                                                label="End Shift &nbsp;"
+                                                icon="pi pi-times-circle"
+                                                iconPos="right"
+                                                severity="danger"
+                                                onClick={endSession}
                                             />
                                         )
                                     )}

@@ -83,8 +83,9 @@ export default function LeaveForm() {
             setUploadedFileName('');
         } catch (error) {
             console.error('Error submitting form:', error);
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Leave was not submitted', life: 4000 });
-            setError('Failed to submit the application. Please try again later.');
+            const errorMessage = error.response?.data || 'Failed to submit leave application. Please try again.';
+            toast.current.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 4000 });
+            setError(errorMessage);
         }
     };
 
