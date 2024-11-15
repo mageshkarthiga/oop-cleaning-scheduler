@@ -16,7 +16,6 @@ export default function Leave() {
     const fetchData = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/v0.1/leave-applications/${adminId}/get-pending-leave-applications/`);
-            console.log(response.data);
             setApplications(response.data);
             setLoading(false);
         } catch (error) {

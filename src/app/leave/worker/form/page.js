@@ -41,8 +41,8 @@ export default function LeaveForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedLeave || !startDate || !endDate || !startTime || !endTime || !file) {
-            setError('Please select a leave type and leave period.');
+        if (!selectedLeave || !startDate || !endDate || !startTime || !endTime || (selectedLeave === 'medical' && !file)) {
+            setError('Please select a leave type and leave period. Upload a medical certificate if applying for medical leave.');
             return;
         }
         setError('');
@@ -51,7 +51,7 @@ export default function LeaveForm() {
             setError('Start date must be before the end date.');
             return;
         }
-        const workerId = 5;
+        const workerId = 9;
         const formData = {
             workerId: workerId,
             startDate: startDate,
@@ -60,7 +60,6 @@ export default function LeaveForm() {
 
         try {
             let response;
-            console.log(formData)
             if (selectedLeave === 'medical') {
                 response = await axios.post(`http://localhost:8080/api/v0.1/leave-applications/${workerId}/apply-medical-leave/`, null,
                     {
@@ -82,7 +81,6 @@ export default function LeaveForm() {
             setFile(null);
             setFileUploaded(false);
             setUploadedFileName('');
-            alert('Leave application submitted successfully!');
         } catch (error) {
             console.error('Error submitting form:', error);
             toast.current.show({ severity: 'error', summary: 'Error', detail: 'Leave was not submitted', life: 4000 });
@@ -173,42 +171,44 @@ export default function LeaveForm() {
                 {error && <div className="text-red-600">{error}</div>}
 
                 {/* Upload Medical Certificate */}
-                <div className="col-span-full">
-                    <label htmlFor="cover-photo" className="block text-md font-medium leading-6 text-gray-900">
-                        Medical Certificate
-                    </label>
-                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                        <div className="text-center">
-                            <PhotoIcon aria-hidden="true" className="mx-auto h-12 w-12 text-gray-300" />
-                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                                <label
-                                    htmlFor="file-upload"
-                                    className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                                >
-                                    <span>Upload a file</span>
-                                    <input
-                                        id="file-upload"
-                                        name="file-upload"
-                                        type="file"
-                                        className="sr-only"
-                                        onChange={handleFileChange}
-                                    />
-                                </label>
-                                <p className="pl-1">or drag and drop</p>
+                {selectedLeave === 'medical' && (
+                    <div className="col-span-full">
+                        <label htmlFor="cover-photo" className="block text-md font-medium leading-6 text-gray-900">
+                            Medical Certificate
+                        </label>
+                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                            <div className="text-center">
+                                <PhotoIcon aria-hidden="true" className="mx-auto h-12 w-12 text-gray-300" />
+                                <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+                                    >
+                                        <span>Upload a file</span>
+                                        <input
+                                            id="file-upload"
+                                            name="file-upload"
+                                            type="file"
+                                            className="sr-only"
+                                            onChange={handleFileChange}
+                                        />
+                                    </label>
+                                    <p className="pl-1">or drag and drop</p>
+                                </div>
+                                <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
                             </div>
-                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
                         </div>
+                        {/* Success Message */}
+                        {fileUploaded && (
+                            <p className="mt-2 text-green-600">File "{uploadedFileName}" uploaded successfully!</p>
+                        )}
                     </div>
-                </div>
-                {/* Success Message */}
-                {fileUploaded && (
-                    <p className="mt-2 text-green-600">File "{uploadedFileName}" uploaded successfully!</p>
                 )}
             </div>
 
             {/* Buttons */}
-            <div className="mt-6 flex items-center justify-end gap-x-6">
-                <Button label="Submit" type="submit" />
+            <div className="mt-6 flex items-center gap-x-6">
+                <Button label="Submit Leave" type="submit" />
             </div>
         </form>
     );
