@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { PhotoIcon } from '@heroicons/react/24/solid';
 import { Button } from 'primereact/button';
-import axios from 'axios'; // Import Axios
+import { Toast } from 'primereact/toast';
+import axios from 'axios';
 
 export default function LeaveForm() {
     const [selectedLeave, setSelectedLeave] = useState('');
@@ -14,6 +15,7 @@ export default function LeaveForm() {
     const [error, setError] = useState('');
     const [fileUploaded, setFileUploaded] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState('');
+    const toast = useRef(null);
 
     const leaveTypes = [
         { name: 'Medical Leave', code: 'medical' },
@@ -39,54 +41,57 @@ export default function LeaveForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!selectedLeave || !startDate || !endDate || !startTime || !endTime) {
-            setError('Please select a leave type and leave period.');
+        if (!selectedLeave || !startDate || !endDate || !startTime || !endTime || (selectedLeave === 'medical' && !file)) {
+            setError('Please select a leave type and leave period. Upload a medical certificate if applying for medical leave.');
             return;
         }
         setError('');
 
-        const startDateTime = new Date(`${startDate}T${startTime}`);
-        const endDateTime = new Date(`${endDate}T${endTime}`);
-
-        if (startDateTime >= endDateTime) {
-            setError('Start date and time must be before the end date and time.');
+        if (startDate >= endDate) {
+            setError('Start date must be before the end date.');
             return;
         }
-
-
-        const formData = new FormData();
-        formData.append('leaveType', selectedLeave);
-        const formattedStartDateTime = new Date(`${startDate}T${startTime}`).toISOString();
-        const formattedEndDateTime = new Date(`${endDate}T${endTime}`).toISOString();
-        formData.append('startDate', formattedStartDateTime);
-        formData.append('endDate', formattedEndDateTime);
-        console.log(formData);
-        if (file) {
-            formData.append('medicalCertificate', file);
+        const workerId = 5;
+        const formData = {
+            workerId: workerId,
+            startDate: startDate,
+            endDate: endDate,
         }
 
         try {
-            // Make the API request
-            // const response = await axios.post('https://yourapi.com/leaves', formData, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data', // Set appropriate headers for file upload
-            //     },
-            // });
-            // console.log('Response:', response.data);
-            // Handle success (e.g., reset form or show success message)
-            setSelectedLeave('');
+            let response;
+            if (selectedLeave === 'medical') {
+                response = await axios.post(`http://localhost:8080/api/v0.1/leave-applications/${workerId}/apply-medical-leave/`, null,
+                    {
+                        params: formData
+                    }
+                );
+            } else if (selectedLeave === 'annual') {
+                response = await axios.post(`http://localhost:8080/api/v0.1/leave-applications/${workerId}/apply-annual-leave/`, null,
+                    {
+                        params: formData
+                    }
+                );
+            }
+
+            console.log('Response:', response.data);
+            if(response.status == 202) {
+                toast.current.show({ severity: 'success', summary: 'Success', detail: 'Leave submitted successfully!', life: 4000 });
+            }
             setFile(null);
             setFileUploaded(false);
             setUploadedFileName('');
-            alert('Leave application submitted successfully!');
         } catch (error) {
             console.error('Error submitting form:', error);
-            setError('Failed to submit the application. Please try again.');
+            const errorMessage = error.response?.data || 'Failed to submit leave application. Please try again.';
+            toast.current.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 4000 });
+            setError(errorMessage);
         }
     };
 
     return (
         <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
+            <Toast ref={toast} /> 
             <div className="space-y-6">
                 <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Leave Application Form</h2>
 
@@ -167,42 +172,44 @@ export default function LeaveForm() {
                 {error && <div className="text-red-600">{error}</div>}
 
                 {/* Upload Medical Certificate */}
-                <div className="col-span-full">
-                    <label htmlFor="cover-photo" className="block text-md font-medium leading-6 text-gray-900">
-                        Medical Certificate
-                    </label>
-                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                        <div className="text-center">
-                            <PhotoIcon aria-hidden="true" className="mx-auto h-12 w-12 text-gray-300" />
-                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                                <label
-                                    htmlFor="file-upload"
-                                    className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                                >
-                                    <span>Upload a file</span>
-                                    <input
-                                        id="file-upload"
-                                        name="file-upload"
-                                        type="file"
-                                        className="sr-only"
-                                        onChange={handleFileChange}
-                                    />
-                                </label>
-                                <p className="pl-1">or drag and drop</p>
+                {selectedLeave === 'medical' && (
+                    <div className="col-span-full">
+                        <label htmlFor="cover-photo" className="block text-md font-medium leading-6 text-gray-900">
+                            Medical Certificate
+                        </label>
+                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                            <div className="text-center">
+                                <PhotoIcon aria-hidden="true" className="mx-auto h-12 w-12 text-gray-300" />
+                                <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+                                    >
+                                        <span>Upload a file</span>
+                                        <input
+                                            id="file-upload"
+                                            name="file-upload"
+                                            type="file"
+                                            className="sr-only"
+                                            onChange={handleFileChange}
+                                        />
+                                    </label>
+                                    <p className="pl-1">or drag and drop</p>
+                                </div>
+                                <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
                             </div>
-                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
                         </div>
+                        {/* Success Message */}
+                        {fileUploaded && (
+                            <p className="mt-2 text-green-600">File "{uploadedFileName}" uploaded successfully!</p>
+                        )}
                     </div>
-                </div>
-                {/* Success Message */}
-                {fileUploaded && (
-                    <p className="mt-2 text-green-600">File "{uploadedFileName}" uploaded successfully!</p>
                 )}
             </div>
 
             {/* Buttons */}
-            <div className="mt-6 flex items-center justify-end gap-x-6">
-                <Button label="Submit" type="submit" />
+            <div className="mt-6 flex items-center gap-x-6">
+                <Button label="Submit Leave" type="submit" />
             </div>
         </form>
     );

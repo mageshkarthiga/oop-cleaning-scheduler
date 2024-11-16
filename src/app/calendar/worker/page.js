@@ -10,12 +10,12 @@ export default function CalendarView() {
     useEffect(() => {
         async function fetchEvents() {
             try {
-                const response = await axios.get('http://localhost:8080/api/v0.1/shift/worker/2');
+                const response = await axios.get('http://localhost:8080/api/v0.1/shift/worker/5');
                 const data = response.data;
                 console.log(data);
                 const formattedEvents = data.map(event => ({
                     id: event.shiftId.toString(),
-                    title: 'Shift ' + event.shiftId,
+                    title: 'Shift - ' + event.clientName.split(' ')[0] + " " +  event.clientName.split(' ')[1].charAt(0) + ".",
                     start:`${event.sessionStartDate}T${event.sessionStartTime}`,
                     end:`${event.sessionEndDate}T${event.sessionEndTime}`,
                     backgroundColor:"red",
@@ -42,7 +42,7 @@ export default function CalendarView() {
                     headerToolbar={{
                         left: 'prev,next',
                         center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
                     }}
                     fixedWeekCount={false}
                 />
