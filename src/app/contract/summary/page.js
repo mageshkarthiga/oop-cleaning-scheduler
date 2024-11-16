@@ -99,7 +99,7 @@ export default function ContractSummary() {
                 dropdownIcon="pi pi-chevron-down"
             />
             <br /><br />
-            <DataTable value={contracts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={1}>
+            <DataTable value={contracts} paginator rows={5} loading={loading} sortField='contractStart' sortOrder={-1}>
                 <Column field="clientName" header="Client" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }} sortable/>
                 <Column field="contractStart" header="Start Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractStart")} sortable />
                 <Column field="contractEnd" header="End Date" style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "contractEnd")} sortable/>

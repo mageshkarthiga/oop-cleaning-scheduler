@@ -111,7 +111,7 @@ export default function CreateContractForm() {
             // Delay the router.push call
             setTimeout(() => {
                 router.push('/contract/summary');
-            }, 6000);
+            }, 4000);
         } catch (error) {
             console.error('Error submitting form:', error);
             setLoading(false);
