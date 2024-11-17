@@ -34,7 +34,6 @@ export default function Navbar() {
                     <Link href="/contract/summary" className="font-semibold leading-4 text-gray-900">Contracts</Link>
                     <Link href="/calendar/admin" className="font-semibold leading-4 text-gray-900">Calendar</Link>
                     <Link href="/client/summary" className="font-semibold leading-4 text-gray-900">Clients</Link>
-                    <Link href="/leave/worker/form" className="font-semibold leading-4 text-gray-900">Leave Application</Link>
                     <Link href="/leave/worker/summary" className="font-semibold leading-4 text-gray-900">Leave History</Link>
                     <Link href="/leave/admin" className="font-semibold leading-4 text-gray-900">Leave Approval</Link>
                 </PopoverGroup>

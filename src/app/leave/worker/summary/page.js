@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -11,6 +12,7 @@ import axios from 'axios';
 export default function Leave() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
     const [workerId, setWorkerId] = useState(4);
     const [workers, setWorkers] = useState([]);
     const [isMounted, setIsMounted] = useState(false);  // Added state to track mount
@@ -78,12 +80,19 @@ export default function Leave() {
         return formatDate(rowData[field]);
     };
 
+    const handleNavigate = () => {
+        router.push("/leave/worker/form");
+    };
+
     return (<form className="m-4 border-4 p-4">
                 <Toast ref={toast} />
                 <div className="space-y-6">
                     <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">
                         Leave Application Form
                     </h2>
+                    <div className="mt-6 flex items-center gap-x-6">
+                        <Button label="Apply for Leave" type="button" onClick={handleNavigate} className="p-button-secondary" />
+                    </div>
                     {/* Worker Selection Dropdown */}
                     <div className="flex-1">
                         <label htmlFor="worker" className="block text-md font-medium leading-6 text-gray-900">

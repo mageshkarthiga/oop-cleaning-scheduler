@@ -14,7 +14,7 @@ const fetchClients = async () => {
         console.log(response.data)
         return response.data;
     } catch (error) {
-        console.error("Error fetching leave applications", error);
+        console.error("Error fetching clients", error);
         return [];
     }
 };
