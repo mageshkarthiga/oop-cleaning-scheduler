@@ -121,12 +121,15 @@ export default function LeaveForm() {
         }
     };
 
+    const handleNavigate = () => {
+        router.push("/summary");
+    };
+
     return (
         <form className="m-4 border-4 p-4" onSubmit={handleSubmit}>
             <Toast ref={toast} /> 
             <div className="space-y-6">
                 <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Leave Application Form</h2>
-
                 {/* Worker Selection Dropdown */}
                 <div className="flex-1">
                     <label htmlFor="worker" className="block text-md font-medium leading-6 text-gray-900">

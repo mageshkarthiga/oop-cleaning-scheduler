@@ -43,7 +43,7 @@ export default function Leave() {
 
     useEffect(() => {
         fetchAdmins(); // Fetch the list of admins on component mount
-        fetchData(); // Fetch data for the default admin (ID 2)
+        fetchData(); // Fetch data for the default admin (ID 1)
     }, [adminId]); // Re-fetch data when selectedAdminId changes
 
     const handleApprove = async (rowData) => {
@@ -96,25 +96,33 @@ export default function Leave() {
         return formatDate(rowData[field]);
     };
 
-    return (
-        <div>
-            <Toast ref={toast} />
-            <div className='container mx-auto p-4 card border-4'>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900 m-3">Pending Leave Applications</h2>
-
-                {/* Dropdown to select admin */}
-                <div className="mb-4">
-                    <label htmlFor="adminDropdown" className="block text-lg font-medium">Select Admin</label>
-                    <Dropdown
-                        id="adminDropdown"
-                        value={adminId}
-                        options={admins.map(admin => ({ label: admin.username, value: admin.adminId }))}  // Map to display admin names
-                        onChange={(e) => setAdminId(e.value)}
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Select an Admin"
-                    />
-                </div>
+    return (<form className="m-4 border-4 p-4">
+                            <Toast ref={toast} />
+                            <div className="space-y-6">
+                                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">
+                                    Pending Leave Application
+                                </h2>
+                                {/* Admin Selection Dropdown */}
+                                <div className="flex-1">
+                                    <label htmlFor="admin" className="block text-md font-medium leading-6 text-gray-900">
+                                        Admin
+                                    </label>
+                                    <div className="mt-2">
+                                        <select
+                                            id="admin"
+                                            value={adminId}
+                                            onChange={(e) => setAdminId(Number(e.target.value))}
+                                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                        >
+                                            <option value="" disabled>Select Admin</option>
+                                            {admins.map((admin) => (
+                                                <option key={admin.adminId} value={admin.adminId}>
+                                                    {admin.username}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
 
                 <DataTable value={applications} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
                     <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}/>
@@ -124,6 +132,6 @@ export default function Leave() {
                     <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}/>
                 </DataTable>
             </div>
-        </div>
-    )
+        </form>
+    );
 }
