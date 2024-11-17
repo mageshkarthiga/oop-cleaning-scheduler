@@ -21,6 +21,8 @@ Ensure you have the following installed on your system:
 - Node.js (16 or higher)
 - npm, Yarn, pnpm, or Bun (any package manager)
 
+In order to run the backend system, please clone this repository (https://github.com/TonyDS2022/is442-cleaning-scheduler.git) and follow the steps listed in the respective README file
+
 ### Installation
 
 1. Clone the repository:
