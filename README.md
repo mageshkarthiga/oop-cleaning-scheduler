@@ -1,6 +1,6 @@
-# IS442 OOP G3T1 Cleaning Scheduler
+# IS442 OOP G3T5 Cleaning Scheduler
 
-**IS442 OOP G3T1 Cleaning Scheduler** is a comprehensive cleaning management platform built with [Next.js](https://nextjs.org/), designed to streamline client, contract, and shift management processes.
+**IS442 OOP G3T5 Cleaning Scheduler** is a comprehensive cleaning management platform built with [Next.js](https://nextjs.org/), designed to streamline client, contract, and shift management processes.
 
 ## Features
 
