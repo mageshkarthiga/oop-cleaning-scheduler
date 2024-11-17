@@ -1,11 +1,14 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PhotoIcon } from '@heroicons/react/24/solid';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
+import { Dropdown } from 'primereact/dropdown';
 import axios from 'axios';
 
 export default function LeaveForm() {
+    const [workers, setWorkers] = useState([]);
+    const [workerId, setWorkerId] = useState(1);
     const [selectedLeave, setSelectedLeave] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -15,7 +18,12 @@ export default function LeaveForm() {
     const [error, setError] = useState('');
     const [fileUploaded, setFileUploaded] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState('');
+    const [isMounted, setIsMounted] = useState(false);  // Added state to track mount
     const toast = useRef(null);
+
+    useEffect(() => {
+                setIsMounted(true);  // Set to true after mount
+            }, []);
 
     const leaveTypes = [
         { name: 'Medical Leave', code: 'medical' },
@@ -23,9 +31,28 @@ export default function LeaveForm() {
     ];
 
     const today = new Date();
-    const minDate = today.toISOString().split('T')[0];
-    today.setHours(today.getHours() + 3); 
-    const minTime = today.toTimeString().split(' ')[0].slice(0, 5);
+    const todayDate = today.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    let minTime = today.toTimeString().split(' ')[0].slice(0, 5); // Default minTime is the current time
+
+    // Compare if leaveStartDate is today
+    if (startDate === todayDate) {
+        today.setHours(today.getHours() + 3);  // Add 3 hours to current time
+        minTime = today.toTimeString().split(' ')[0].slice(0, 5);  // Set minTime to 3 hours ahead
+    } else {
+        minTime = '00:00';  // Allow any time if leaveStartDate is not today
+    }
+
+    useEffect(() => {
+        const fetchWorkers = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/v0.1/workers');
+                setWorkers(response.data);
+            } catch (error) {
+                console.error('Error fetching workers:', error);
+            }
+        };
+        fetchWorkers();
+    }, []);
 
     const handleFileChange = (e) => {
         if (e.target.files.length > 0) {
@@ -51,7 +78,12 @@ export default function LeaveForm() {
             setError('Start date must be before the end date.');
             return;
         }
-        const workerId = 5;
+
+        if (startTime >= endTime) {
+            setError('Start time must be before the end time.');
+            return;
+        }
+
         const formData = {
             workerId: workerId,
             startDate: startDate,
@@ -95,6 +127,28 @@ export default function LeaveForm() {
             <div className="space-y-6">
                 <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">Leave Application Form</h2>
 
+                {/* Worker Selection Dropdown */}
+                <div className="flex-1">
+                    <label htmlFor="worker" className="block text-md font-medium leading-6 text-gray-900">
+                        Worker
+                    </label>
+                    <div className="mt-2">
+                        <select
+                            id="worker"
+                            value={workerId}
+                            onChange={(e) => setWorkerId(Number(e.target.value))}
+                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        >
+                            <option value="" disabled>Select Worker</option>
+                            {workers.map((worker) => (
+                                <option key={worker.workerId} value={worker.workerId}>
+                                    {worker.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
                 <div className="flex-1">
                     <label htmlFor="leave-type" className="block text-md font-medium leading-6 text-gray-900">
                         Leave Type
@@ -129,7 +183,7 @@ export default function LeaveForm() {
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    min={minDate}
+                                    min={todayDate}
                                     className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>

@@ -10,7 +10,7 @@ import axios from 'axios';
 export default function Leave() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [adminId, setAdminId] = useState(2);
+    const [adminId, setAdminId] = useState(1);
     const [admins, setAdmins] = useState([]);
     const [isMounted, setIsMounted] = useState(false);  // Added state to track mount
     const toast = useRef(null);
