@@ -28,7 +28,7 @@ In order to run the backend system, please clone this repository (https://github
 1. Clone the repository:
    ```bash
    git clone https://github.com/mageshkarthiga/oop-cleaning-scheduler.git
-   cd IS442 OOP G3T1 Cleaning Scheduler
+   cd oop-cleaning-scheduler
    ```
 
 2. Install dependencies:
