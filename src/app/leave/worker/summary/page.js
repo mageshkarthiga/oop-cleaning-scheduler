@@ -31,19 +31,17 @@ export default function Leave() {
         }
     };
 
-    // Fetch all historical leave applications for the selected worker
     const fetchData = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/v0.1/leave-applications/${workerId}`);
-            
-            // Ensure applications is always an array
-            const data = Array.isArray(response.data) ? response.data : [response.data];
+            // Handle cases where response.data might be null or undefined
+            const data = Array.isArray(response.data) ? response.data : response.data ? [response.data] : [];
             setApplications(data);
-            setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
             setApplications([]); // Set to an empty array in case of an error
-            setLoading(false);
+        } finally {
+            setLoading(false); // Always stop the loading spinner
         }
     };
     

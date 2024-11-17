@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -10,8 +11,10 @@ import axios from 'axios';
 export default function Leave() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [adminId, setAdminId] = useState(1);
+    const [adminId, setAdminId] = useState(2);
     const [admins, setAdmins] = useState([]);
+    const [shiftId, setShiftId] = useState();
+    const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);  // Added state to track mount
     const toast = useRef(null);
 
@@ -43,7 +46,7 @@ export default function Leave() {
 
     useEffect(() => {
         fetchAdmins(); // Fetch the list of admins on component mount
-        fetchData(); // Fetch data for the default admin (ID 1)
+        fetchData(); // Fetch data for the default admin (ID 2)
     }, [adminId]); // Re-fetch data when selectedAdminId changes
 
     const handleApprove = async (rowData) => {
@@ -52,7 +55,6 @@ export default function Leave() {
             if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Success', detail: `Approved application for ${rowData.workerName}`, life: 4000 });
                 fetchData();
-                console.log(rowData);
             }
         } catch (error) {
             console.error('Error approving application:', error);
@@ -96,33 +98,66 @@ export default function Leave() {
         return formatDate(rowData[field]);
     };
 
+    const handleViewSelect = (shiftId, event) => {
+        event.preventDefault();  // Prevent form submission
+        router.push(`/shift/${shiftId}`);
+    };
+
+
+    const viewButtonTemplate = (rowData) => {
+        return (
+            <Button
+                label="View"
+                severity="help"
+                outlined
+                onClick={(e) => handleViewSelect(rowData.shiftId, e)}
+            />
+        );
+    };
+
+     // get shifts affected by the leave application
+     const affectedShiftsTemplate = (rowData) => {
+            return (
+                <div>
+                    {/* Map through affectedShifts and display them in a DataTable */}
+                    <DataTable value={rowData.affectedShifts} paginator rows={3} className="p-datatable-gridlines">
+                        <Column field="shiftId" header="Shift ID" />
+                        <Column field="shiftStartDate" header="Shift Date" body={(rowData) => formatDate(rowData.shiftStartDate)} />
+                        <Column field="clientName" header="Client Name" style={{ color: "black", backgroundColor: "white" }}/>
+                        <Column body={viewButtonTemplate} style={{ color: "black", backgroundColor: "white" }} />
+                    </DataTable>
+                </div>
+            );
+        };
+
+
     return (<form className="m-4 border-4 p-4">
-                            <Toast ref={toast} />
-                            <div className="space-y-6">
-                                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">
-                                    Pending Leave Application
-                                </h2>
-                                {/* Admin Selection Dropdown */}
-                                <div className="flex-1">
-                                    <label htmlFor="admin" className="block text-md font-medium leading-6 text-gray-900">
-                                        Admin
-                                    </label>
-                                    <div className="mt-2">
-                                        <select
-                                            id="admin"
-                                            value={adminId}
-                                            onChange={(e) => setAdminId(Number(e.target.value))}
-                                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                        >
-                                            <option value="" disabled>Select Admin</option>
-                                            {admins.map((admin) => (
-                                                <option key={admin.adminId} value={admin.adminId}>
-                                                    {admin.username}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
+            <Toast ref={toast} />
+            <div className="space-y-6">
+                <h2 className="text-xl font-bold leading-7 text-gray-900 mb-5">
+                    Pending Leave Application
+                </h2>
+                {/* Admin Selection Dropdown */}
+                <div className="flex-1">
+                    <label htmlFor="admin" className="block text-md font-medium leading-6 text-gray-900">
+                        Admin
+                    </label>
+                    <div className="mt-2">
+                        <select
+                            id="admin"
+                            value={adminId}
+                            onChange={(e) => setAdminId(Number(e.target.value))}
+                            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        >
+                            <option value="" disabled>Select Admin</option>
+                            {admins.map((admin) => (
+                                <option key={admin.adminId} value={admin.adminId}>
+                                    {admin.username}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
 
                 <DataTable value={applications} paginator rows={5} loading={loading} sortField="dateSubmitted" sortOrder={-1}>
                     <Column field="workerName" header="Worker Name" style={{ color: "black", backgroundColor: "white", fontWeight: "bold" }}/>
@@ -130,6 +165,7 @@ export default function Leave() {
                     <Column field="leaveStartDate" header="Leave Start Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveStartDate")}/>
                     <Column field="leaveEndDate" header="Leave End Date" sortable style={{ color: "black", backgroundColor: "white" }} body={(rowData) => dateBodyTemplate(rowData, "leaveEndDate")}/>
                     <Column header="Actions" body={actionTemplate} style={{ color: "black", backgroundColor: "white" }}/>
+                    <Column header="Affected Shifts" body={affectedShiftsTemplate} />
                 </DataTable>
             </div>
         </form>

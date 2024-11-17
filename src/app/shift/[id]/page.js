@@ -128,6 +128,35 @@ export default function DetailsPage() {
         }
     };
 
+    const cancelShift = async () => {
+        try {
+            // Cancel the shift
+            const response = await axios.put(`http://localhost:8080/api/v0.1/shift/cancel-shift/${id}`);
+            // Notify the user with the success message from the server
+            toast.current.show({
+                severity: 'success',
+                summary: 'Shift Cancelled',
+                detail: response.data // Server-provided success message
+            });
+
+            // Fetch the updated shift data
+            const updatedResponse = await axios.get(`http://localhost:8080/api/v0.1/shift/${id}`);
+            setShift(updatedResponse.data); // Update the local state with fresh data
+        } catch (error) {
+            console.error("Error cancelling shift:", error);
+
+            // Display the server-provided error message if available, else show a fallback
+            const errorMessage =
+                error.response && error.response.data
+                    ? error.response.data // Server-provided error message
+                    : 'Unable to cancel shift. Please try again.';
+
+            toast.current.show({ severity: 'error', summary: 'Error', detail: errorMessage });
+        }
+    };
+
+
+
 
     const endSession = async () => {
         if (!selectedImage) {
@@ -225,13 +254,22 @@ export default function DetailsPage() {
                                     <br />
                                     {!isSessionFinished && shift.sessionStatus !== 'FINISHED' && (
                                         shift.sessionStatus === 'NOT_STARTED' ? (
-                                            <Button
-                                                label="Start Shift &nbsp;"
-                                                icon="pi pi-check-circle"
-                                                iconPos="right"
-                                                severity="success"
-                                                onClick={startSession}
-                                            />
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    label="Start Shift &nbsp;"
+                                                    icon="pi pi-check-circle"
+                                                    iconPos="right"
+                                                    severity="success"
+                                                    onClick={startSession}
+                                                />
+                                                <Button
+                                                    label="Cancel Shift &nbsp;"
+                                                    icon="pi pi-times-circle"
+                                                    iconPos="right"
+                                                    severity="warning"
+                                                    onClick={cancelShift}  // Add the cancelShift function
+                                                />
+                                            </div>
                                         ) : (
                                             <Button
                                                 label="End Shift &nbsp;"

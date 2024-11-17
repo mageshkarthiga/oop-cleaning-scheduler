@@ -219,13 +219,24 @@ export default function SessionDetails() {
     const cancelSession = async () => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/cancel-cleaning-session/${id}`);
-            if (response.status === 200) {
-                toast.current.show({ severity: 'success', summary: 'Session Cancelled', detail: 'Session was successfully cancelled.', life: 4000 });
-            }
+            toast.current.show({
+                severity: 'success',
+                summary: 'Shift Cancelled',
+                detail: response.data // Server-provided success message
+            });
+
+            // Fetch the updated session data
+            const updatedResponse = await axios.get(`http://localhost:8080/api/v0.1/cleaningSession/${id}`);
+            setSession(updatedResponse.data); // Update the local state with fresh data
         } catch (error) {
             console.log("Error cancelling session", error);
-            toast.current.show({ severity: 'error', summary: 'Cancellation Failed', detail: 'Failed to cancel session. Please try again.', life: 4000 });
-        }
+            // Display the server-provided error message if available, else show a fallback
+            const errorMessage =
+                error.response && error.response.data
+                    ? error.response.data // Server-provided error message
+                    : 'Unable to cancel shift. Please try again.';
+            toast.current.show({ severity: 'error', summary: 'Error', detail: errorMessage });
+            }
     };
 
     const updateSession = async () => {
@@ -318,9 +329,9 @@ export default function SessionDetails() {
                         <p className="font-semibold mt-4">Session Status:
                             <Tag value={session.sessionStatus.replace(/_/g, ' ')} severity={getSessionStatusSeverity(session)} className="ml-2" />
                         </p>
-                        <div className='flex flex-row space-x-4'>
-                            <Button label="Update Session" className="mt-5" onClick={() => updateSession()} disabled={!isDateTimeModified()} />
-                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()} />
+                         <div className='flex flex-row space-x-4'>
+                                <Button label="Update Session" className="mt-5" onClick={updateSession} disabled={!isDateTimeModified()} />
+                                <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={cancelSession} />
                         </div>
                     </div>
 
