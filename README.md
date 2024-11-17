@@ -65,6 +65,15 @@ This project uses `next/font` to automatically optimize and load the **Inter** f
 ## Directory Structure
 
 - `app/page.js`: The main entry point for the application. Modify this file to update the homepage.
+- `app/client`: Pages related to client management
+- `app/calendar`: Calendar view of sessions for admins and shifts for workers
+- `app/components`: Consists of components commonly used across all pages
+- `app/contract`: Pages related to contract management
+- `app/leave`: Pages related to leave application submission and approval/rejection
+- `app/session`: Page to show cleaning sessions details according to the ID
+- `app/shift`: Page to show shift details according to the 
+- `app/layout.js`: To manage the styling of the application
+- `styles`: CSS file to apply global styles across the application
 
 
 ## License
