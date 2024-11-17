@@ -35,13 +35,19 @@ export default function Leave() {
     const fetchData = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/v0.1/leave-applications/${workerId}`);
-            setApplications(response.data);
+            
+            // Ensure applications is always an array
+            const data = Array.isArray(response.data) ? response.data : [response.data];
+            setApplications(data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
+            setApplications([]); // Set to an empty array in case of an error
             setLoading(false);
         }
     };
+    
+    
 
     useEffect(() => {
         fetchWorkers(); // Fetch the list of workers on component mount
