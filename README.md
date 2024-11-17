@@ -1,8 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# IS442 OOP G3T1 Cleaning Scheduler
+
+**IS442 OOP G3T1 Cleaning Scheduler** is a comprehensive cleaning management platform built with [Next.js](https://nextjs.org/), designed to streamline client, contract, and shift management processes.
+
+## Features
+
+- **Client Management**: Create and manage clients, including properties and contact information.  
+- **Contract Management**: Create and manage contracts with details like duration, frequency, and associated properties.  
+- **Shift Management**: Start and end shifts with image uploads, view detailed shift records, and track shift statuses.  
+- **Leave Management**: Apply for medical and annual leave, including file uploads for supporting documents such as medical certificates.  
+- **Google Maps Integration**: View directions and calculate travel duration between locations.  
+- **Data Visualization**: Visualize key data points such as clients, contracts, workers, and sessions using interactive charts.
 
 ## Getting Started
 
-First, run the development server:
+Follow these steps to run the project locally.
+
+### Prerequisites
+
+Ensure you have the following installed on your system:
+- Node.js (16 or higher)
+- npm, Yarn, pnpm, or Bun (any package manager)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mageshkarthiga/oop-cleaning-scheduler.git
+   cd IS442 OOP G3T1 Cleaning Scheduler
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+### Running the Development Server
+
+Start the server in development mode:
 
 ```bash
 npm run dev
@@ -14,23 +54,17 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application. The page auto-updates as you edit files in the `app` directory.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Fonts
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+This project uses `next/font` to automatically optimize and load the **Inter** font from Google Fonts.
 
-## Learn More
+## Directory Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `app/page.js`: The main entry point for the application. Modify this file to update the homepage.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project is licensed under the [MIT License](LICENSE).
