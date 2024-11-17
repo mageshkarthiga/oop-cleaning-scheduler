@@ -9,7 +9,6 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-import { Dialog } from 'primereact/dialog';
 
 export default function SessionDetails() {
     const { id } = useParams();
@@ -29,7 +28,6 @@ export default function SessionDetails() {
     const [initialStartTime, setInitialStartTime] = useState('');
     const [initialEndDate, setInitialEndDate] = useState('');
     const [initialEndTime, setInitialEndTime] = useState('');
-    const [dialogVisible, setDialogVisible] = useState(false);
     const [showAvailableWorkers, setShowAvailableWorkers] = useState(false);
     const [unassignedShiftId, setUnassignedShiftId] = useState(null);
     const [buttonLoading, setButtonLoading] = useState(false);
@@ -248,14 +246,6 @@ export default function SessionDetails() {
         }
     };
 
-    const dialogFooter =
-        (
-            <div className='flex flex-row space-x-4'>
-                <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
-                <Button label="Cancel &nbsp;" icon="pi pi-check" onClick={cancelSession} severity='danger' iconPos='right' outlined />
-            </div>
-        )
-
     const isDateTimeModified = () => {
         return (
             startDate !== initialStartDate ||
@@ -330,7 +320,7 @@ export default function SessionDetails() {
                         </p>
                         <div className='flex flex-row space-x-4'>
                             <Button label="Update Session" className="mt-5" onClick={() => updateSession()} disabled={!isDateTimeModified()} />
-                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => setDialogVisible(true)} />
+                            <Button label="Cancel Session" className="mt-5" severity='danger' outlined onClick={() => cancelSession()} />
                         </div>
                     </div>
 
@@ -386,16 +376,6 @@ export default function SessionDetails() {
                         )}
                     </div>
                 </div>
-                <Dialog
-                    header="Confirm Cancellation"
-                    visible={dialogVisible}
-                    style={{ width: '50vw' }}
-                    onHide={() => setDialogVisible(false)}
-                    footer={dialogFooter}
-                >
-                    <p>Are you sure you want to cancel this session?</p>
-                </Dialog>
-
             </Card>
             <Toast ref={toast} position="top-right" />
         </div>

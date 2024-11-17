@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
-import { Dialog } from 'primereact/dialog';
 
 export default function ContractDetails() {
     const [contract, setContract] = useState(null);
@@ -19,7 +18,6 @@ export default function ContractDetails() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [startTime, setStartTime] = useState('');
-    const [dialogVisible, setDialogVisible] = useState(false);
     const { id } = useParams();
     const router = useRouter();
 
@@ -160,10 +158,6 @@ export default function ContractDetails() {
         }
     };
 
-    const showDialog = () => {
-        setDialogVisible(true);
-    };
-
     if (error) {
         return (
             <div className="text-red-600">
@@ -232,7 +226,7 @@ export default function ContractDetails() {
                     </div>
                     <div className='flex flex-row space-x-4'>
                         <Button label="Update Contract" className="mt-4" onClick={updateContractDetails} />
-                        <Button label="Terminate Contract" className="mt-4" onClick={showDialog} severity="danger" outlined />
+                        <Button label="Terminate Contract" className="mt-4" onClick={terminateContract} severity="danger" outlined />
                     </div>
                 </div>
 
@@ -254,21 +248,6 @@ export default function ContractDetails() {
                     )}
                 </div>
             </div>
-            {/* Confirmation Dialog */}
-            <Dialog
-                header="Confirm Termination"
-                visible={dialogVisible}
-                style={{ width: '50vw' }}
-                onHide={() => setDialogVisible(false)}
-                footer={
-                    <div className='flex flex-row space-x-4'>
-                        <Button label="No &nbsp;" icon="pi pi-times" onClick={() => setDialogVisible(false)} iconPos='right' />
-                        <Button label="Terminate &nbsp;" icon="pi pi-check" onClick={terminateContract} severity='danger' iconPos='right' outlined />
-                    </div>
-                }
-            >
-                <p>Are you sure you want to terminate this contract?</p>
-            </Dialog>
         </Card>
     );
 }
