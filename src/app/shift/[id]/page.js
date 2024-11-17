@@ -115,7 +115,7 @@ export default function DetailsPage() {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/start-shift/${id}`);
             console.log(response);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 console.log('Session started successfully', response);
                 setIsSessionStarted(true);
                 setSelectedImage(null);
@@ -136,7 +136,7 @@ export default function DetailsPage() {
         }
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/end-shift/${id}`);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 console.log('Session ended successfully', response);
                 setIsSessionStarted(false);
                 setIsSessionFinished(true);

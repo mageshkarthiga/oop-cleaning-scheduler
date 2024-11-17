@@ -191,7 +191,7 @@ export default function SessionDetails() {
     const handleWorkerUnassign = async (shiftId) => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/shift/unassign-worker/${shiftId}`);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Worker Unassigned', detail: 'Worker unassigned successfully.', life: 4000 });
                 // Refresh the session data
                 fetchSessionData();
@@ -221,7 +221,7 @@ export default function SessionDetails() {
     const cancelSession = async () => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/cleaningSession/cancel-cleaning-session/${id}`);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Session Cancelled', detail: 'Session was successfully cancelled.', life: 4000 });
             }
         } catch (error) {
@@ -239,7 +239,7 @@ export default function SessionDetails() {
                 sessionEndTime: endTime,
             });
 
-            if (response.status === 202) {
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Session Updated', detail: 'Session was successfully updated.', life: 4000 });
             }
         } catch (error) {

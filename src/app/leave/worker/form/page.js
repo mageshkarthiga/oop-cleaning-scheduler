@@ -75,7 +75,7 @@ export default function LeaveForm() {
             }
 
             console.log('Response:', response.data);
-            if(response.status == 202) {
+            if(response.status == 200) {
                 toast.current.show({ severity: 'success', summary: 'Success', detail: 'Leave submitted successfully!', life: 4000 });
             }
             setFile(null);

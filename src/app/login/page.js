@@ -25,7 +25,7 @@ export default function Login() {
         if (!isEmptyUsername && !isEmptyPassword) {
             axios.get(`http://localhost:8080/api/v0.1/admins/` + username)
             .then((response) => {
-                if (response.status === 202) {
+                if (response.status === 200) {
                     if(response.data.password === password){
                         setLoginError(false);
                         router.push('/calendar');

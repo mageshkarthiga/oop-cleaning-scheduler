@@ -31,7 +31,7 @@ export default function Leave() {
     const handleApprove = async (rowData) => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/admins/approve-leave-application/${rowData.leaveApplicationId}`);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 updateApplicationStatus(rowData.workerId, "approved");
                 toast.current.show({ severity: 'success', summary: 'Success', detail: `Approved application for ${rowData.workerName}`, life: 4000 });
                 fetchData();
@@ -45,7 +45,7 @@ export default function Leave() {
     const handleReject = async (rowData) => {
         try {
             const response = await axios.put(`http://localhost:8080/api/v0.1/admins/reject-leave-application/${rowData.leaveApplicationId}`);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 updateApplicationStatus(rowData.workerId, "rejected");
                 toast.current.show({ severity: 'success', summary: 'Success', detail: `Rejected application for ${rowData.workerName}`, life: 4000 });
                 fetchData();

@@ -122,7 +122,7 @@ export default function CreateClientForm() {
             );
             console.log('Client Response:', clientResponse);
 
-            if (clientResponse.status === 202) {
+            if (clientResponse.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client created!', life: 4000 });
 
                 // Search for the client by name to get the clientId
@@ -150,7 +150,7 @@ export default function CreateClientForm() {
                     );
                     console.log('Client Site Response:', clientSiteResponse);
 
-                    if (clientSiteResponse.status === 202) {
+                    if (clientSiteResponse.status === 200) {
                         toast.current.show({ severity: 'success', summary: 'Success', detail: 'Client and client site created successfully!', life: 4000 });
                         setLoading(false);
 

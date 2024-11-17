@@ -103,7 +103,7 @@ export default function CreateContractForm() {
                 }
             );
             console.log('Response:', response.data);
-            if (response.status === 202) {
+            if (response.status === 200) {
                 toast.current.show({ severity: 'success', summary: 'Success', detail: 'Contract created successfully!', life: 7000 });
                 // Reset form fields
             }
